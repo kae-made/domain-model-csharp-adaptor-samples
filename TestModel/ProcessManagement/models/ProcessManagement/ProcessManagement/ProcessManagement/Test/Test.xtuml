@@ -1,0 +1,226 @@
+-- BP 7.1.6 content: Package syschar: 3 persistence-version: 7.1.6
+
+INSERT INTO EP_PKG
+	VALUES ("237a1717-f2e8-4c70-98df-8667f1ed2173",
+	"00000000-0000-0000-0000-000000000000",
+	"ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	'Test',
+	'',
+	0);
+INSERT INTO GD_MD
+	VALUES ("1f282cc5-6fec-4f01-9b36-d53b5131273c",
+	112,
+	"237a1717-f2e8-4c70-98df-8667f1ed2173",
+	108,
+	0,
+	0,
+	1,
+	1,
+	1,
+	12,
+	1,
+	0,
+	0,
+	0,
+	0,
+	0,
+	'',
+	'ProcessManagement::ProcessManagement::ProcessManagement::Test');
+INSERT INTO DIM_DIA
+	VALUES ("1f282cc5-6fec-4f01-9b36-d53b5131273c",
+	'',
+	1.000000,
+	0.000000,
+	0.000000,
+	"00000000-0000-0000-0000-000000000000");
+INSERT INTO S_SYNC
+	VALUES ("acfabff6-e971-4516-bc65-eaf7e8ef4104",
+	"00000000-0000-0000-0000-000000000000",
+	'TestInitialize',
+	'',
+	'SELECT ANY resourceAssigner FROM INSTANCES OF RA WHERE SELECTED.Name == param.assignerName;
+IF EMPTY resourceAssigner
+	CREATE OBJECT INSTANCE resourceAssigner OF RA;
+	resourceAssigner.Name = param.assignerName;
+
+	CREATE OBJECT INSTANCE resource OF RES;
+	resource.Name = "Res0Of" + param.assignerName;
+	RELATE resource TO resourceAssigner ACROSS R6;
+
+	CREATE OBJECT INSTANCE resource OF RES;
+	resource.Name = "Res1Of" + param.assignerName;
+	RELATE resource TO resourceAssigner ACROSS R6;
+
+	CREATE OBJECT INSTANCE resource OF RES;
+	resource.Name = "Res2Of" + param.assignerName;
+	RELATE resource TO resourceAssigner ACROSS R6;
+
+END IF;
+
+cmdName = "CmdA";
+SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+IF EMPTY orderSpec
+	CREATE OBJECT INSTANCE orderSpec OF OS;
+	orderSpec.Command = cmdName;
+END IF;
+
+cmdName = "CmdB";
+SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+IF EMPTY orderSpec
+	CREATE OBJECT INSTANCE orderSpec OF OS;
+	orderSpec.Command = cmdName;
+END IF;
+
+cmdName = "CmdC";
+SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+IF EMPTY orderSpec
+	CREATE OBJECT INSTANCE orderSpec OF OS;
+	orderSpec.Command = cmdName;
+END IF;
+
+cmdName = "CmdD";
+SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+IF EMPTY orderSpec
+	CREATE OBJECT INSTANCE orderSpec OF OS;
+	orderSpec.Command = cmdName;
+END IF;
+',
+	"ba5eda7a-def5-0000-0000-000000000000",
+	1,
+	'',
+	0,
+	1);
+INSERT INTO S_SPARM
+	VALUES ("4a2e4233-24f3-43fd-b080-0a8724bc1897",
+	"acfabff6-e971-4516-bc65-eaf7e8ef4104",
+	'assignerName',
+	"ba5eda7a-def5-0000-0000-000000000004",
+	0,
+	'',
+	"00000000-0000-0000-0000-000000000000",
+	'');
+INSERT INTO PE_PE
+	VALUES ("acfabff6-e971-4516-bc65-eaf7e8ef4104",
+	1,
+	"237a1717-f2e8-4c70-98df-8667f1ed2173",
+	"00000000-0000-0000-0000-000000000000",
+	1);
+INSERT INTO S_SYNC
+	VALUES ("004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	"00000000-0000-0000-0000-000000000000",
+	'TestCreateRequester',
+	'',
+	'SELECT ANY resource FROM INSTANCES OF RES WHERE SELECTED.Name == param.resourceName;
+SELECT ANY orderSpec1 FROM INSTANCES OF OS WHERE SELECTED.Command == param.step1Cmd;
+SELECT ANY orderSpec2 FROM INSTANCES OF OS WHERE SELECTED.Command == param.step2Cmd;
+SELECT ANY orderSpec3 FROM INSTANCES OF OS WHERE SELECTED.Command == param.step3Cmd;
+IF NOT_EMPTY resource AND NOT_EMPTY orderSpec1 AND NOT_EMPTY orderSpec2 AND NOT_EMPTY orderSpec3
+	GENERATE REQ1:''Request Process''( ResourceName:param.resourceName, Step1Command:param.step1Cmd, Step2Command:param.step2Cmd, Step3Command:param.step3Cmd ) TO REQ CREATOR;
+END IF;',
+	"ba5eda7a-def5-0000-0000-000000000000",
+	1,
+	'',
+	0,
+	2);
+INSERT INTO S_SPARM
+	VALUES ("baf1da61-28ed-40e8-ba35-f916cdfe2267",
+	"004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	'resourceName',
+	"ba5eda7a-def5-0000-0000-000000000004",
+	0,
+	'',
+	"00000000-0000-0000-0000-000000000000",
+	'');
+INSERT INTO S_SPARM
+	VALUES ("c887c39c-95ce-4766-a4bc-2b6bfcbcd4ed",
+	"004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	'step1Cmd',
+	"ba5eda7a-def5-0000-0000-000000000004",
+	0,
+	'',
+	"baf1da61-28ed-40e8-ba35-f916cdfe2267",
+	'');
+INSERT INTO S_SPARM
+	VALUES ("7c1fe596-c121-44c1-bc73-cf95c7769c9e",
+	"004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	'step2Cmd',
+	"ba5eda7a-def5-0000-0000-000000000004",
+	0,
+	'',
+	"c887c39c-95ce-4766-a4bc-2b6bfcbcd4ed",
+	'');
+INSERT INTO S_SPARM
+	VALUES ("3cd33166-1da3-47bf-8b1f-0ffc8e9fbd56",
+	"004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	'step3Cmd',
+	"ba5eda7a-def5-0000-0000-000000000004",
+	0,
+	'',
+	"7c1fe596-c121-44c1-bc73-cf95c7769c9e",
+	'');
+INSERT INTO PE_PE
+	VALUES ("004ff9da-704a-4e1e-81a9-a4735e84b8df",
+	1,
+	"237a1717-f2e8-4c70-98df-8667f1ed2173",
+	"00000000-0000-0000-0000-000000000000",
+	1);
+INSERT INTO S_SYNC
+	VALUES ("31c4dc7c-69f9-44c8-b21a-4b42eedadc5b",
+	"00000000-0000-0000-0000-000000000000",
+	'TestNotifyProcessStepDone',
+	'',
+	'SELECT ANY requester FROM INSTANCES OF REQ WHERE SELECTED.Requester_ID == param.requestorId;
+IF NOT_EMPTY requester
+	SELECT ONE currentProcStep RELATED BY requester->P[R1]->PS[R7.''current step''];
+	IF NOT_EMPTY currentProcStep
+		IF currentProcStep.Finished == FALSE
+			GENERATE PS2:Done TO currentProcStep;
+		ELSE
+			SELECT ONE currentIWork RELATED BY currentProcStep->IntermediateWork[R5.''successor''];
+			GENERATE IntermediateWork2:Done to currentIWork; 
+		END IF;
+	END IF;
+END IF;',
+	"ba5eda7a-def5-0000-0000-000000000000",
+	1,
+	'',
+	0,
+	3);
+INSERT INTO S_SPARM
+	VALUES ("98c6f5b5-9288-480b-84c2-22954ca6effe",
+	"31c4dc7c-69f9-44c8-b21a-4b42eedadc5b",
+	'requestorId',
+	"ba5eda7a-def5-0000-0000-000000000005",
+	0,
+	'',
+	"00000000-0000-0000-0000-000000000000",
+	'');
+INSERT INTO PE_PE
+	VALUES ("31c4dc7c-69f9-44c8-b21a-4b42eedadc5b",
+	1,
+	"237a1717-f2e8-4c70-98df-8667f1ed2173",
+	"00000000-0000-0000-0000-000000000000",
+	1);
+INSERT INTO PE_PE
+	VALUES ("237a1717-f2e8-4c70-98df-8667f1ed2173",
+	1,
+	"00000000-0000-0000-0000-000000000000",
+	"aadca489-988a-4029-8c49-9a49706f4ac7",
+	7);
+INSERT INTO C_C_PROXY
+	VALUES ("aadca489-988a-4029-8c49-9a49706f4ac7",
+	"00000000-0000-0000-0000-000000000000",
+	"00000000-0000-0000-0000-000000000000",
+	'ProcessManagement',
+	'',
+	0,
+	"00000000-0000-0000-0000-000000000000",
+	0,
+	'',
+	'',
+	'../ProcessManagement.xtuml');
+INSERT INTO S_SYS_PROXY
+	VALUES ("ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	'ProcessManagement',
+	1,
+	'../../../ProcessManagement.xtuml');

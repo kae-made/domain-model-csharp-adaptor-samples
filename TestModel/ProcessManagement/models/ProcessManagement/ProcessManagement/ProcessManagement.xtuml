@@ -1,0 +1,70 @@
+-- BP 7.1.6 content: Package syschar: 3 persistence-version: 7.1.6
+
+INSERT INTO EP_PKG
+	VALUES ("ff12f7fa-4e85-4d97-98f4-43e177cf4a18",
+	"ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	"ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	'ProcessManagement',
+	'',
+	0);
+INSERT INTO GD_MD
+	VALUES ("789b3a48-bae1-4c0a-9f78-fe9083dc9197",
+	112,
+	"ff12f7fa-4e85-4d97-98f4-43e177cf4a18",
+	108,
+	0,
+	0,
+	1,
+	1,
+	1,
+	12,
+	1,
+	0,
+	0,
+	200,
+	150,
+	0,
+	'',
+	'ProcessManagement::ProcessManagement');
+INSERT INTO GD_GE
+	VALUES ("6e86996c-508e-4f51-b0a2-b60e2aac6123",
+	"789b3a48-bae1-4c0a-9f78-fe9083dc9197",
+	"aadca489-988a-4029-8c49-9a49706f4ac7",
+	98,
+	0,
+	'ProcessManagement::ProcessManagement::ProcessManagement');
+INSERT INTO GD_SHP
+	VALUES ("6e86996c-508e-4f51-b0a2-b60e2aac6123");
+INSERT INTO GD_NCS
+	VALUES ("6e86996c-508e-4f51-b0a2-b60e2aac6123");
+INSERT INTO DIM_ND
+	VALUES (200.000000,
+	150.000000,
+	"6e86996c-508e-4f51-b0a2-b60e2aac6123");
+INSERT INTO DIM_GE
+	VALUES (0.000000,
+	0.000000,
+	"6e86996c-508e-4f51-b0a2-b60e2aac6123",
+	"00000000-0000-0000-0000-000000000000");
+INSERT INTO DIM_ELE
+	VALUES ("6e86996c-508e-4f51-b0a2-b60e2aac6123",
+	0,
+	"00000000-0000-0000-0000-000000000000");
+INSERT INTO DIM_DIA
+	VALUES ("789b3a48-bae1-4c0a-9f78-fe9083dc9197",
+	'',
+	1.000000,
+	0.000000,
+	0.000000,
+	"00000000-0000-0000-0000-000000000000");
+INSERT INTO PE_PE
+	VALUES ("ff12f7fa-4e85-4d97-98f4-43e177cf4a18",
+	1,
+	"00000000-0000-0000-0000-000000000000",
+	"00000000-0000-0000-0000-000000000000",
+	7);
+INSERT INTO S_SYS_PROXY
+	VALUES ("ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	'ProcessManagement',
+	1,
+	'../ProcessManagement.xtuml');

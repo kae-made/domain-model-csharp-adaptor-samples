@@ -1,0 +1,78 @@
+-- BP 7.1.6 content: ModelClass syschar: 3 persistence-version: 7.1.6
+
+INSERT INTO O_OBJ
+	VALUES ("0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	'Order Spec',
+	5,
+	'OS',
+	'',
+	"00000000-0000-0000-0000-000000000000");
+INSERT INTO O_NBATTR
+	VALUES ("d6a2e57f-a3e9-4e2a-bf29-8741cbc66bc2",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_BATTR
+	VALUES ("d6a2e57f-a3e9-4e2a-bf29-8741cbc66bc2",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_ATTR
+	VALUES ("d6a2e57f-a3e9-4e2a-bf29-8741cbc66bc2",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	"00000000-0000-0000-0000-000000000000",
+	'Order_ID',
+	'',
+	'',
+	'Order_ID',
+	0,
+	"ba5eda7a-def5-0000-0000-000000000005",
+	'',
+	'');
+INSERT INTO O_NBATTR
+	VALUES ("c9140777-7243-432c-afdc-b73c80fb9c87",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_BATTR
+	VALUES ("c9140777-7243-432c-afdc-b73c80fb9c87",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_ATTR
+	VALUES ("c9140777-7243-432c-afdc-b73c80fb9c87",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	"d6a2e57f-a3e9-4e2a-bf29-8741cbc66bc2",
+	'Command',
+	'',
+	'',
+	'Command',
+	0,
+	"ba5eda7a-def5-0000-0000-000000000004",
+	'',
+	'');
+INSERT INTO O_ID
+	VALUES (0,
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_OIDA
+	VALUES ("d6a2e57f-a3e9-4e2a-bf29-8741cbc66bc2",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	0,
+	'Order_ID');
+INSERT INTO O_ID
+	VALUES (1,
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO O_OIDA
+	VALUES ("c9140777-7243-432c-afdc-b73c80fb9c87",
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	1,
+	'Command');
+INSERT INTO O_ID
+	VALUES (2,
+	"0d579dfa-481f-44ad-a362-fe3b27a1e25d");
+INSERT INTO PE_PE
+	VALUES ("0d579dfa-481f-44ad-a362-fe3b27a1e25d",
+	1,
+	"24f197cd-9bea-4907-aab9-6d42d429d30c",
+	"00000000-0000-0000-0000-000000000000",
+	4);
+INSERT INTO EP_PKG_PROXY
+	VALUES ("24f197cd-9bea-4907-aab9-6d42d429d30c",
+	"00000000-0000-0000-0000-000000000000",
+	"ff30c5c8-afe7-4a0f-adac-a0182c4bde48",
+	'ProcessManagement',
+	'',
+	0,
+	'../ProcessManagement.xtuml');
