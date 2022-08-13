@@ -21,6 +21,7 @@ namespace ProcessManagement.Adaptor
         CIMProcessManagementLib domainModel;
 
         public static DomainModelAdaptor adapterInstance = null;
+
         public static DomainModelAdaptor GetInstance(Logger logger)
         {
             if (adapterInstance == null)
@@ -31,6 +32,8 @@ namespace ProcessManagement.Adaptor
             }
             return adapterInstance;
         }
+
+
         public ProcessManagementAdaptor(CIMProcessManagementLib domainModel, Logger logger) : base(logger)
         {
             this.domainModel = domainModel;

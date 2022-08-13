@@ -58,33 +58,26 @@ namespace WebAPIAppUIDomainAdaptor.Controllers
 
         // POST api/<DomainOperationsController>
         [HttpPost("{classKeyLett}")]
-        public string Post(string classKeyLett, string optype, [FromBody] RequestingParameters value)
+        public string Post(string classKeyLett, [FromBody] RequestingParameters value)
         {
             var domainModelAdaptor = Program.GetDomainModelAdaptor(_logger);
             string result = "{}";
-            switch (optype)
+            switch (value.OpType)
             {
+                case "instance":
+                    result = domainModelAdaptor.GetInstance(classKeyLett, value.Identities);
+                    break;
                 case "operation":
                     result = domainModelAdaptor.InvokeDomainClassOperation(classKeyLett, value.Name, value);
                     break;
                 case "event":
                     result = domainModelAdaptor.SendEvent(classKeyLett, value.Name, value);
                     break;
+                case "linked":
+                    result = domainModelAdaptor.GetLinkedInstances(classKeyLett, value.Identities, value.Name);
+                    break;
             }
             return result;
-        }
-        // POST api/<DomainOperationsController>
-        [HttpPost("{classKeyLett}")]
-        public string Post(string classKeyLett, [FromBody] IDictionary<string, string> identitiese)
-        {
-            var domainModelAdaptor = Program.GetDomainModelAdaptor(_logger);
-            return domainModelAdaptor.GetInstance(classKeyLett, identitiese);
-        }
-        [HttpPost("{classKeyLett}")]
-        public string Post(string classKeyLett, string relName, [FromBody] IDictionary<string, string> identitiese)
-        {
-            var domainModelAdaptor = Program.GetDomainModelAdaptor(_logger);
-            return domainModelAdaptor.GetLinkedInstances(classKeyLett, identitiese, relName);
         }
 
         [HttpPatch("{classKeyLett}")]
