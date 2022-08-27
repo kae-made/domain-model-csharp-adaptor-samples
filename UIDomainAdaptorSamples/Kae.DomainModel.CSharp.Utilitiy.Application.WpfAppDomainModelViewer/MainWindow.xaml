@@ -1,0 +1,125 @@
+﻿<!--
+    Copyright (c) Knowledge & Experience. All rights reserved.
+    Licensed under the MIT license. See LICENSE file in the project root for full license information.
+-->
+<Window x:Class="Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="800" Width="1200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Domain Model Adaptor : " VerticalAlignment="Center" Margin="1" />
+            <TextBox Name="tbDomainModelAdaptorDLL" VerticalAlignment="Center" HorizontalAlignment="Stretch" Grid.Column="1"/>
+            <Button Name="buttonLoadDomainModelAdaptorDLL" Content="Load" Margin="1" Grid.Column="2" Click="buttonLoadDomainModelAdaptorDLL_Click"/>
+        </Grid>
+        <TextBlock Grid.Row="1" Name="tbDomainName" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="buttonSaveDomainModelState" Content="Save Domain Model State" Margin="1" Click="buttonSaveDomainModelState_Click"/>
+            <TextBox Name="tbDomainModelStateFile" VerticalAlignment="Center" HorizontalAlignment="Stretch" Grid.Column="1"/>
+            <Button Name="buttonLoadDomainModelState" Content="Load Domain Model State" Margin="1" Grid.Column="2" Click="buttonLoadDomainModelState_Click"/>
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border Margin="1" BorderBrush="Black" BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Class" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14"/>
+                    <ListBox Name="lbClasses" Grid.Row="1" Margin="1" SelectionChanged="lbClasses_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Path=Value.Name}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="(" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Path=Value.KeyLetter}" VerticalAlignment="Center"/>
+                                    <TextBlock Text=")" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox Name="lbInstances" Grid.Row="2" Margin="1" SelectionChanged="lbInstances_SelectionChanged"/>
+                </Grid>
+            </Border>
+            <Border Margin="1" Grid.Column="1" BorderBrush="Black" BorderThickness="1">
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Operation" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14"/>
+                    <ListBox Name="lbDomainOperations" Grid.Row="1" Margin="1" SelectionChanged="lbDomainOperations_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="30"/>
+                        </Grid.RowDefinitions>
+                        <ListBox Name="lbInvokeOperations" Margin="1">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                        <TextBlock Text=":" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBox Grid.Column="2" Text="{Binding Path=Value.Value, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text=":" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding Path=Value.Spec.TypeKind}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Name="tbOpEmptyParams" Text="no parameters" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Hidden"/>
+                        <Button Name="buttonInvokeDomainOperation" Grid.Row="1" Content="Invoke" Margin="1" Click="buttonInvokeDomainOperation_Click"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                            <TextBlock Text="Return : " VerticalAlignment="Center" />
+                            <TextBlock Name="tbOperationResult" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+            <ScrollViewer Grid.Column="2">
+                <TextBlock Grid.Column="2" Name="tbLog"/>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>

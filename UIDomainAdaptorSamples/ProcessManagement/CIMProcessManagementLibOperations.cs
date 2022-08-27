@@ -74,7 +74,7 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var resourceAssigner = (DomainClassRA)(instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assignerName))).First());
+            var resourceAssigner = (DomainClassRA)(instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assignerName))).FirstOrDefault());
 
             // Line : 2
             if (resourceAssigner == null)
@@ -89,7 +89,7 @@ namespace ProcessManagement
                 resource.Attr_Name = ("Res0Of" + assignerName);
                 // Line : 8
                 // resource - R6 -> resourceAssigner;
-                resource.LinkR6(resourceAssigner, changedStates);;
+                resource.LinkR6(resourceAssigner, changedStates);
 
                 // Line : 10
                 resource = DomainClassRESBase.CreateInstance(instanceRepository, logger, changedStates);
@@ -97,7 +97,7 @@ namespace ProcessManagement
                 resource.Attr_Name = ("Res1Of" + assignerName);
                 // Line : 12
                 // resource - R6 -> resourceAssigner;
-                resource.LinkR6(resourceAssigner, changedStates);;
+                resource.LinkR6(resourceAssigner, changedStates);
 
                 // Line : 14
                 resource = DomainClassRESBase.CreateInstance(instanceRepository, logger, changedStates);
@@ -105,14 +105,14 @@ namespace ProcessManagement
                 resource.Attr_Name = ("Res2Of" + assignerName);
                 // Line : 16
                 // resource - R6 -> resourceAssigner;
-                resource.LinkR6(resourceAssigner, changedStates);;
+                resource.LinkR6(resourceAssigner, changedStates);
 
             }
 
             // Line : 20
             var cmdName = "CmdA";
             // Line : 21
-            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).First());
+            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
 
             // Line : 22
             if (orderSpec == null)
@@ -126,7 +126,7 @@ namespace ProcessManagement
             // Line : 27
             cmdName = "CmdB";
             // Line : 28
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).First());
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
 
             // Line : 29
             if (orderSpec == null)
@@ -140,7 +140,7 @@ namespace ProcessManagement
             // Line : 34
             cmdName = "CmdC";
             // Line : 35
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).First());
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
 
             // Line : 36
             if (orderSpec == null)
@@ -154,7 +154,7 @@ namespace ProcessManagement
             // Line : 41
             cmdName = "CmdD";
             // Line : 42
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).First());
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
 
             // Line : 43
             if (orderSpec == null)
@@ -186,16 +186,16 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName))).First());
+            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName))).FirstOrDefault());
 
             // Line : 2
-            var orderSpec1 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd))).First());
+            var orderSpec1 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd))).FirstOrDefault());
 
             // Line : 3
-            var orderSpec2 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd))).First());
+            var orderSpec2 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd))).FirstOrDefault());
 
             // Line : 4
-            var orderSpec3 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd))).First());
+            var orderSpec3 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd))).FirstOrDefault());
 
             // Line : 5
             if ((((resource != null && orderSpec1 != null) && orderSpec2 != null) && orderSpec3 != null))
@@ -231,7 +231,7 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == requestorId))).First());
+            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == requestorId))).FirstOrDefault());
 
             // Line : 2
             if (requester != null)

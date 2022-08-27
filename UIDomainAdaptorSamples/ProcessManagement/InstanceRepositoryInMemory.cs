@@ -19,18 +19,17 @@ namespace ProcessManagement
     {
         private Logger logger;
 
+        public override event ClassPropertiesUpdateHandler ClassPropertiesUpdated;
+        public override event RelationshipUpdateHandler RelationshipUpdated;
+
         public InstanceRepositoryInMemory(Logger logger)
         {
             this.logger = logger;
         }
 
-        public override void UpdateState(DomainClassDef instance, IDictionary<string, object> chnaged)
+        public override void LoadState(string domainName, IDictionary<string, IList<IDictionary<string, object>>> instances)
         {
-            // Do nothing.
-        }
-
-        public override void LoadState(IDictionary<string, IList<IDictionary<string, object>>> instances)
-        {
+            // current edition doesn't support multi domain feature.
             foreach (var className in instances.Keys)
             {
                 foreach (var states in instances[className])
@@ -38,8 +37,14 @@ namespace ProcessManagement
                     DomainClassDef newInstance = null;
                     switch (className)
                     {
+                        case "PS":
+                            newInstance = DomainClassPSBase.CreateInstance(this, logger);
+                            break;
                         case "OS":
                             newInstance = DomainClassOSBase.CreateInstance(this, logger);
+                            break;
+                        case "P":
+                            newInstance = DomainClassPBase.CreateInstance(this, logger);
                             break;
                         case "REQ":
                             newInstance = DomainClassREQBase.CreateInstance(this, logger);
@@ -49,12 +54,6 @@ namespace ProcessManagement
                             break;
                         case "RA":
                             newInstance = DomainClassRABase.CreateInstance(this, logger);
-                            break;
-                        case "P":
-                            newInstance = DomainClassPBase.CreateInstance(this, logger);
-                            break;
-                        case "PS":
-                            newInstance = DomainClassPSBase.CreateInstance(this, logger);
                             break;
                         case "IW":
                             newInstance = DomainClassIWBase.CreateInstance(this, logger);
@@ -73,12 +72,17 @@ namespace ProcessManagement
 
         public override void UpdateCInstance(CInstanceChagedState instanceState)
         {
-            // Do nothing
+            ClassPropertiesUpdated?.Invoke(instanceState.Target, new ClassPropertiesUpdatedEventArgs() { Operation = instanceState.OP.ToString(), ClassKeyLetter = instanceState.Target.ClassName, Identities = instanceState.Target.GetIdentities(), Properties = instanceState.ChangedProperties });
+        }
+
+        public override void UpdateState(DomainClassDef instance, IDictionary<string, object> changed)
+        {
+            ClassPropertiesUpdated?.Invoke(instance, new ClassPropertiesUpdatedEventArgs() { Operation = ChangedState.Operation.Update.ToString(), ClassKeyLetter = instance.ClassName, Identities = instance.GetIdentities(), Properties = changed });
         }
 
         public override void UpdateCLink(CLinkChangedState linkState)
         {
-            // To nothing
+            RelationshipUpdated?.Invoke(this, new RelationshipUpdatedEventArgs() { Operation = linkState.OP.ToString(), RelationshipId = linkState.Target.RelationshipID, Phrase = linkState.Target.Phrase, SourceClassKeyLetter = linkState.Target.Source.ClassName, SourceIdentities = linkState.Target.Source.GetIdentities(), DestinationClassKeyLetter = linkState.Target.Destination.ClassName, DestinationIdentities = linkState.Target.Destination.GetIdentities() });
         }
 
         public override IEnumerable<T> SelectInstances<T>(string className, IDictionary<string, object> conditionPropertyValues, Func<T, IDictionary<string, object>, bool> compare)

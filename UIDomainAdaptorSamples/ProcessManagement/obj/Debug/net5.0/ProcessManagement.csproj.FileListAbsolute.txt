@@ -1,0 +1,12 @@
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.csproj.AssemblyReference.cache
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.AssemblyInfoInputs.cache
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.AssemblyInfo.cs
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.csproj.CoreCompileInputs.cache
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\bin\Debug\net5.0\ProcessManagement.deps.json
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\bin\Debug\net5.0\ProcessManagement.dll
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\bin\Debug\net5.0\ProcessManagement.pdb
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.dll
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\refint\ProcessManagement.dll
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ProcessManagement.pdb
+C:\Users\kae-m\source\repos\UIDomainAdaptorSamples\ProcessManagement\obj\Debug\net5.0\ref\ProcessManagement.dll

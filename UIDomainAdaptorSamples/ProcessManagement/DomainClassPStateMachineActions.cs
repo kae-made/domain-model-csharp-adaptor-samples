@@ -53,17 +53,17 @@ namespace ProcessManagement
             //  32 : GENERATE P2:'Proceed Process Step' TO SELF;
 
             // Line : 1
-            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == Requester_ID))).First());
+            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == Requester_ID))).FirstOrDefault());
 
             // Line : 2
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Resource_ID == Resource_ID))).First());
+            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Resource_ID == Resource_ID))).FirstOrDefault());
 
             // Line : 3
             // Relate requester - R1 -> resource USING SELF
             target.LinkR1(requester,resource);
 
             // Line : 5
-            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step1Command))).First());
+            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step1Command))).FirstOrDefault());
 
             // Line : 6
             var processStep1 = DomainClassPSBase.CreateInstance(instanceRepository, logger, changedStates);
@@ -73,18 +73,18 @@ namespace ProcessManagement
             processStep1.Attr_Finished = false;
             // Line : 9
             // processStep1 - R4 -> orderSpec;
-            processStep1.LinkR4(orderSpec, changedStates);;
+            processStep1.LinkR4(orderSpec, changedStates);
 
             // Line : 10
             // SELF - R2 -> processStep1;
-            processStep1.LinkR2(target, changedStates);;
+            processStep1.LinkR2(target, changedStates);
 
             // Line : 11
             // SELF - R3 -> processStep1;
-            target.LinkR3FirstStep(processStep1, changedStates);;
+            target.LinkR3FirstStep(processStep1, changedStates);
 
             // Line : 13
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step2Command))).First());
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step2Command))).FirstOrDefault());
 
             // Line : 14
             var processStep2 = DomainClassPSBase.CreateInstance(instanceRepository, logger, changedStates);
@@ -94,14 +94,14 @@ namespace ProcessManagement
             processStep2.Attr_Finished = false;
             // Line : 17
             // processStep2 - R4 -> orderSpec;
-            processStep2.LinkR4(orderSpec, changedStates);;
+            processStep2.LinkR4(orderSpec, changedStates);
 
             // Line : 18
             // SELF - R2 -> processStep2;
-            processStep2.LinkR2(target, changedStates);;
+            processStep2.LinkR2(target, changedStates);
 
             // Line : 22
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step3Command))).First());
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step3Command))).FirstOrDefault());
 
             // Line : 23
             var processStep3 = DomainClassPSBase.CreateInstance(instanceRepository, logger, changedStates);
@@ -111,15 +111,15 @@ namespace ProcessManagement
             processStep3.Attr_Finished = false;
             // Line : 26
             // processStep3 - R4 -> orderSpec;
-            processStep3.LinkR4(orderSpec, changedStates);;
+            processStep3.LinkR4(orderSpec, changedStates);
 
             // Line : 27
             // SELF - R2 -> processStep3;
-            processStep3.LinkR2(target, changedStates);;
+            processStep3.LinkR2(target, changedStates);
 
             // Line : 31
             // SELF - R7 -> processStep1;
-            target.LinkR7CurrentStep(processStep1, changedStates);;
+            target.LinkR7CurrentStep(processStep1, changedStates);
 
             // Line : 32
             DomainClassPStateMachine.P2_ProceedProcessStep.Create(receiver:target, sendNow:true);

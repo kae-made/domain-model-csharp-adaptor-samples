@@ -16,6 +16,12 @@ using System.Threading.Tasks;
 
 namespace ProcessManagement.Adaptor
 {
+    // Entry for Application front end.
+    public static class DomainModelAdaptorEntry
+    {
+        public static DomainModelAdaptor GetAdaptor(Logger logger) { return ProcessManagementAdaptor.GetInstance(logger); }
+    }
+
     public class ProcessManagementAdaptor : DomainModelAdaptor
     {
         CIMProcessManagementLib domainModel;
@@ -37,9 +43,12 @@ namespace ProcessManagement.Adaptor
         public ProcessManagementAdaptor(CIMProcessManagementLib domainModel, Logger logger) : base(logger)
         {
             this.domainModel = domainModel;
+            domainOpsParamSpecs = _domainOpsParamSpecs;
+            classSpecs = _classSpecs;
+            domainModelName = "ProcessManagement";
         }
 
-        protected Dictionary<string, Dictionary<string, ParamSpec>> domainOpsParamSpecs = new Dictionary<string, Dictionary<string, ParamSpec>>()
+        protected Dictionary<string, Dictionary<string, ParamSpec>> _domainOpsParamSpecs = new Dictionary<string, Dictionary<string, ParamSpec>>()
         {
             {
                 "TestInitialize", new Dictionary<string, ParamSpec>()
@@ -64,301 +73,10 @@ namespace ProcessManagement.Adaptor
             }
         };
 
-        protected Dictionary<string, ClassSpec> classSpecs = new Dictionary<string, ClassSpec>()
+        protected Dictionary<string, ClassSpec> _classSpecs = new Dictionary<string, ClassSpec>()
         {
             {
-                "Order Spec", new ClassSpec()
-                {                
-                    Name = "Order Spec",
-                    KeyLetter = "OS",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "Order_ID", new PropSpec()
-                            { Name = "Order_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "Command", new PropSpec()
-                            { Name = "Command", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>(),
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "PS[R4]", new LinkSpec()
-                            { Name = "PS[R4]", RelID = "R4", Phrase = "", Set = true, Condition = true, DstKeyLett = "PS" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                }
-            },
-            {
-                "Requester", new ClassSpec()
-                {                
-                    Name = "Requester",
-                    KeyLetter = "REQ",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "Requester_ID", new PropSpec()
-                            { Name = "Requester_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "current_state", new PropSpec()
-                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
-                        },
-                        {
-                            "Step1Command", new PropSpec()
-                            { Name = "Step1Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "Step2Command", new PropSpec()
-                            { Name = "Step2Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "Step3Command", new PropSpec()
-                            { Name = "Step3Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "RequestingResource_ID", new PropSpec()
-                            { Name = "RequestingResource_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>(),
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "P[R1.'is used by']", new LinkSpec()
-                            { Name = "P[R1.'is used by']", RelID = "R1", Phrase = "is used by", Set = false, Condition = true, DstKeyLett = "P" }
-                        },
-                        {
-                            "RES[R8.'is requesting']", new LinkSpec()
-                            { Name = "RES[R8.'is requesting']", RelID = "R8", Phrase = "is requesting", Set = false, Condition = true, DstKeyLett = "RES" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "REQ1_RequestProcess", new OperationSpec()
-                            {
-                                Name = "REQ1_RequestProcess", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                                {
-                                    { "ResourceName", new ParamSpec() {Name = "ResourceName", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
-                                    { "Step1Command", new ParamSpec() {Name = "Step1Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
-                                    { "Step2Command", new ParamSpec() {Name = "Step2Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
-                                    { "Step3Command", new ParamSpec() {Name = "Step3Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }
-                                }
-                            }
-                        },
-                        {
-                            "REQ2_Assigned", new OperationSpec()
-                            {
-                                Name = "REQ2_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "REQ3_Done", new OperationSpec()
-                            {
-                                Name = "REQ3_Done", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "Resource", new ClassSpec()
-                {                
-                    Name = "Resource",
-                    KeyLetter = "RES",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "Resource_ID", new PropSpec()
-                            { Name = "Resource_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "current_state", new PropSpec()
-                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
-                        },
-                        {
-                            "Name", new PropSpec()
-                            { Name = "Name", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "RA_ID", new PropSpec()
-                            { Name = "RA_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>(),
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "P[R1.'is user of']", new LinkSpec()
-                            { Name = "P[R1.'is user of']", RelID = "R1", Phrase = "is user of", Set = false, Condition = true, DstKeyLett = "P" }
-                        },
-                        {
-                            "REQ[R8]", new LinkSpec()
-                            { Name = "REQ[R8]", RelID = "R8", Phrase = "", Set = true, Condition = true, DstKeyLett = "REQ" }
-                        },
-                        {
-                            "RA[R6]", new LinkSpec()
-                            { Name = "RA[R6]", RelID = "R6", Phrase = "", Set = false, Condition = false, DstKeyLett = "RA" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "RES1_Freed", new OperationSpec()
-                            {
-                                Name = "RES1_Freed", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "RES2_Assigned", new OperationSpec()
-                            {
-                                Name = "RES2_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "Resource Assigner", new ClassSpec()
-                {                
-                    Name = "Resource Assigner",
-                    KeyLetter = "RA",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "RA_ID", new PropSpec()
-                            { Name = "RA_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "current_state", new PropSpec()
-                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
-                        },
-                        {
-                            "Name", new PropSpec()
-                            { Name = "Name", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>(),
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "RES[R6]", new LinkSpec()
-                            { Name = "RES[R6]", RelID = "R6", Phrase = "", Set = true, Condition = true, DstKeyLett = "RES" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "RA1_RequestResource", new OperationSpec()
-                            {
-                                Name = "RA1_RequestResource", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "RA2_ResourceFreed", new OperationSpec()
-                            {
-                                Name = "RA2_ResourceFreed", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "RA3_Assigned", new OperationSpec()
-                            {
-                                Name = "RA3_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "Process", new ClassSpec()
-                {                
-                    Name = "Process",
-                    KeyLetter = "P",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "current_state", new PropSpec()
-                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
-                        },
-                        {
-                            "Requester_ID", new PropSpec()
-                            { Name = "Requester_ID", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        },
-                        {
-                            "Resource_ID", new PropSpec()
-                            { Name = "Resource_ID", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        },
-                        {
-                            "Process_ID", new PropSpec()
-                            { Name = "Process_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
-                        },
-                        {
-                            "firstProcessSpec_ID", new PropSpec()
-                            { Name = "firstProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        },
-                        {
-                            "currentProcessSpec_ID", new PropSpec()
-                            { Name = "currentProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>(),
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "PS[R2]", new LinkSpec()
-                            { Name = "PS[R2]", RelID = "R2", Phrase = "", Set = true, Condition = false, DstKeyLett = "PS" }
-                        },
-                        {
-                            "REQ[R1.'is used by']", new LinkSpec()
-                            { Name = "REQ[R1.'is used by']", RelID = "R1", Phrase = "is used by", Set = false, Condition = false, DstKeyLett = "REQ" }
-                        },
-                        {
-                            "RES[R1.'is user of']", new LinkSpec()
-                            { Name = "RES[R1.'is user of']", RelID = "R1", Phrase = "is user of", Set = false, Condition = false, DstKeyLett = "RES" }
-                        },
-                        {
-                            "PS[R3.'first step']", new LinkSpec()
-                            { Name = "PS[R3.'first step']", RelID = "R3", Phrase = "first step", Set = false, Condition = false, DstKeyLett = "PS" }
-                        },
-                        {
-                            "PS[R7.'current step']", new LinkSpec()
-                            { Name = "PS[R7.'current step']", RelID = "R7", Phrase = "current step", Set = false, Condition = false, DstKeyLett = "PS" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "P1_StartProcess", new OperationSpec()
-                            {
-                                Name = "P1_StartProcess", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                                {
-                                    { "Requester_ID", new ParamSpec() {Name = "Requester_ID", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
-                                    { "Resource_ID", new ParamSpec() {Name = "Resource_ID", TypeKind = ParamSpec.DataType.String, IsArray = false} }
-                                }
-                            }
-                        },
-                        {
-                            "P2_ProceedProcessStep", new OperationSpec()
-                            {
-                                Name = "P2_ProceedProcessStep", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "P3_DoneAllSteps", new OperationSpec()
-                            {
-                                Name = "P3_DoneAllSteps", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "Process Spec", new ClassSpec()
+                "PS", new ClassSpec()
                 {                
                     Name = "Process Spec",
                     KeyLetter = "PS",
@@ -452,7 +170,322 @@ namespace ProcessManagement.Adaptor
                 }
             },
             {
-                "Intermediate Work", new ClassSpec()
+                "OS", new ClassSpec()
+                {                
+                    Name = "Order Spec",
+                    KeyLetter = "OS",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "Order_ID", new PropSpec()
+                            { Name = "Order_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "Command", new PropSpec()
+                            { Name = "Command", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>(),
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "PS[R4]", new LinkSpec()
+                            { Name = "PS[R4]", RelID = "R4", Phrase = "", Set = true, Condition = true, DstKeyLett = "PS" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                }
+            },
+            {
+                "P", new ClassSpec()
+                {                
+                    Name = "Process",
+                    KeyLetter = "P",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "current_state", new PropSpec()
+                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
+                        },
+                        {
+                            "Requester_ID", new PropSpec()
+                            { Name = "Requester_ID", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        },
+                        {
+                            "Resource_ID", new PropSpec()
+                            { Name = "Resource_ID", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        },
+                        {
+                            "Process_ID", new PropSpec()
+                            { Name = "Process_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "firstProcessSpec_ID", new PropSpec()
+                            { Name = "firstProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        },
+                        {
+                            "currentProcessSpec_ID", new PropSpec()
+                            { Name = "currentProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>(),
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "PS[R2]", new LinkSpec()
+                            { Name = "PS[R2]", RelID = "R2", Phrase = "", Set = true, Condition = false, DstKeyLett = "PS" }
+                        },
+                        {
+                            "REQ[R1.'is used by']", new LinkSpec()
+                            { Name = "REQ[R1.'is used by']", RelID = "R1", Phrase = "is used by", Set = false, Condition = false, DstKeyLett = "REQ" }
+                        },
+                        {
+                            "RES[R1.'is user of']", new LinkSpec()
+                            { Name = "RES[R1.'is user of']", RelID = "R1", Phrase = "is user of", Set = false, Condition = false, DstKeyLett = "RES" }
+                        },
+                        {
+                            "PS[R3.'first step']", new LinkSpec()
+                            { Name = "PS[R3.'first step']", RelID = "R3", Phrase = "first step", Set = false, Condition = false, DstKeyLett = "PS" }
+                        },
+                        {
+                            "PS[R7.'current step']", new LinkSpec()
+                            { Name = "PS[R7.'current step']", RelID = "R7", Phrase = "current step", Set = false, Condition = false, DstKeyLett = "PS" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "P1_StartProcess", new OperationSpec()
+                            {
+                                Name = "P1_StartProcess", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                                {
+                                    { "Requester_ID", new ParamSpec() {Name = "Requester_ID", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
+                                    { "Resource_ID", new ParamSpec() {Name = "Resource_ID", TypeKind = ParamSpec.DataType.String, IsArray = false} }
+                                }
+                            }
+                        },
+                        {
+                            "P2_ProceedProcessStep", new OperationSpec()
+                            {
+                                Name = "P2_ProceedProcessStep", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "P3_DoneAllSteps", new OperationSpec()
+                            {
+                                Name = "P3_DoneAllSteps", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "REQ", new ClassSpec()
+                {                
+                    Name = "Requester",
+                    KeyLetter = "REQ",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "Requester_ID", new PropSpec()
+                            { Name = "Requester_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "current_state", new PropSpec()
+                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
+                        },
+                        {
+                            "Step1Command", new PropSpec()
+                            { Name = "Step1Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "Step2Command", new PropSpec()
+                            { Name = "Step2Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "Step3Command", new PropSpec()
+                            { Name = "Step3Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "RequestingResource_ID", new PropSpec()
+                            { Name = "RequestingResource_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>(),
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "P[R1.'is used by']", new LinkSpec()
+                            { Name = "P[R1.'is used by']", RelID = "R1", Phrase = "is used by", Set = false, Condition = true, DstKeyLett = "P" }
+                        },
+                        {
+                            "RES[R8.'is requesting']", new LinkSpec()
+                            { Name = "RES[R8.'is requesting']", RelID = "R8", Phrase = "is requesting", Set = false, Condition = true, DstKeyLett = "RES" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "REQ1_RequestProcess", new OperationSpec()
+                            {
+                                Name = "REQ1_RequestProcess", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                                {
+                                    { "ResourceName", new ParamSpec() {Name = "ResourceName", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
+                                    { "Step1Command", new ParamSpec() {Name = "Step1Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
+                                    { "Step2Command", new ParamSpec() {Name = "Step2Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }, 
+                                    { "Step3Command", new ParamSpec() {Name = "Step3Command", TypeKind = ParamSpec.DataType.String, IsArray = false} }
+                                }
+                            }
+                        },
+                        {
+                            "REQ2_Assigned", new OperationSpec()
+                            {
+                                Name = "REQ2_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "REQ3_Done", new OperationSpec()
+                            {
+                                Name = "REQ3_Done", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "RES", new ClassSpec()
+                {                
+                    Name = "Resource",
+                    KeyLetter = "RES",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "Resource_ID", new PropSpec()
+                            { Name = "Resource_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "current_state", new PropSpec()
+                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
+                        },
+                        {
+                            "Name", new PropSpec()
+                            { Name = "Name", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "RA_ID", new PropSpec()
+                            { Name = "RA_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "GetAssignerName", new OperationSpec()
+                            {
+                                Name = "GetAssignerName", ReturnType = ParamSpec.DataType.String, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    },
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "P[R1.'is user of']", new LinkSpec()
+                            { Name = "P[R1.'is user of']", RelID = "R1", Phrase = "is user of", Set = false, Condition = true, DstKeyLett = "P" }
+                        },
+                        {
+                            "REQ[R8]", new LinkSpec()
+                            { Name = "REQ[R8]", RelID = "R8", Phrase = "", Set = true, Condition = true, DstKeyLett = "REQ" }
+                        },
+                        {
+                            "RA[R6]", new LinkSpec()
+                            { Name = "RA[R6]", RelID = "R6", Phrase = "", Set = false, Condition = false, DstKeyLett = "RA" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "RES1_Freed", new OperationSpec()
+                            {
+                                Name = "RES1_Freed", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "RES2_Assigned", new OperationSpec()
+                            {
+                                Name = "RES2_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "RA", new ClassSpec()
+                {                
+                    Name = "Resource Assigner",
+                    KeyLetter = "RA",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "RA_ID", new PropSpec()
+                            { Name = "RA_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "current_state", new PropSpec()
+                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
+                        },
+                        {
+                            "Name", new PropSpec()
+                            { Name = "Name", DataType = ParamSpec.DataType.String, Identity = 2, Writable = false, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "TestString", new PropSpec()
+                            { Name = "TestString", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "TestInteger", new PropSpec()
+                            { Name = "TestInteger", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "TestReal", new PropSpec()
+                            { Name = "TestReal", DataType = ParamSpec.DataType.Real, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        },
+                        {
+                            "TestBoolean", new PropSpec()
+                            { Name = "TestBoolean", DataType = ParamSpec.DataType.Boolean, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>(),
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "RES[R6]", new LinkSpec()
+                            { Name = "RES[R6]", RelID = "R6", Phrase = "", Set = true, Condition = true, DstKeyLett = "RES" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "RA1_RequestResource", new OperationSpec()
+                            {
+                                Name = "RA1_RequestResource", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "RA2_ResourceFreed", new OperationSpec()
+                            {
+                                Name = "RA2_ResourceFreed", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "RA3_Assigned", new OperationSpec()
+                            {
+                                Name = "RA3_Assigned", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "IW", new ClassSpec()
                 {                
                     Name = "Intermediate Work",
                     KeyLetter = "IW",
@@ -520,7 +553,7 @@ namespace ProcessManagement.Adaptor
             if (domainOpsParamSpecs.ContainsKey(name))
             {
                 var opSpec = domainOpsParamSpecs[name];
-                RequestingParameters invSpec = new RequestingParameters();
+                RequestingParameters invSpec = new RequestingParameters() { Parameters = new Dictionary<string, object>() };
                 if (CheckParameters(opSpec, parameters, invSpec))
                 {
                     switch (name)
@@ -550,7 +583,7 @@ namespace ProcessManagement.Adaptor
                 if (classSpec.Operations.ContainsKey(name))
                 {
                     var opSpec = classSpec.Operations[name];
-                    var invSpec = new RequestingParameters();
+                    var invSpec = new RequestingParameters() { Parameters = new Dictionary<string, object>(), Identities = new Dictionary<string, string>() };
                     if (CheckIdentity(classSpec.Properties, parameters, invSpec))
                     {
                         if(CheckParameters(opSpec.Parameters,parameters, invSpec))
@@ -558,7 +591,7 @@ namespace ProcessManagement.Adaptor
                             switch (classKeyLett)
                             {
                                 case "PS":
-                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).First();
+                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).FirstOrDefault();
                                     if (instanceOfPS != null)
                                     {
                                         switch (name)
@@ -569,8 +602,21 @@ namespace ProcessManagement.Adaptor
                                         }
                                     }
                                     break;
+                                case "RES":
+                                    var instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"])).FirstOrDefault();
+                                    if (instanceOfRES != null)
+                                    {
+                                        switch (name)
+                                        {
+                                            case "GetAssignerName":
+                                                 var resultOfGetAssignerName = new { result = instanceOfRES.GetAssignerName() };
+                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultOfGetAssignerName);
+                                                break;
+                                        }
+                                    }
+                                    break;
                                 case "IW":
-                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).First();
+                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).FirstOrDefault();
                                     if (instanceOfIW != null)
                                     {
                                         switch (name)
@@ -597,18 +643,54 @@ namespace ProcessManagement.Adaptor
             if (classSpecs.ContainsKey(classKeyLett))
             {
                 var classSpec = classSpecs[classKeyLett];
-                if (classSpec.Operations.ContainsKey(name))
+                if (classSpec.Events.ContainsKey(name))
                 {
-                    var opSpec = classSpec.Operations[name];
-                    var invSpec = new RequestingParameters();
+                    var evtSpec = classSpec.Events[name];
+                    var invSpec = new RequestingParameters() { Parameters = new Dictionary<string, object>(), Identities = new Dictionary<string, string>() };
                     if (CheckIdentity(classSpec.Properties, parameters, invSpec))
                     {
-                        if(CheckParameters(opSpec.Parameters,parameters, invSpec))
+                        if(CheckParameters(evtSpec.Parameters,parameters, invSpec))
                         {
                             switch (classKeyLett)
                             {
+                                case "PS":
+                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).FirstOrDefault();
+                                    switch (name)
+                                    {
+                                        case "PS1_Start":
+                                            DomainClassPSStateMachine.PS1_Start.Create(instanceOfPS, sendNow:true);
+                                            sent = true;
+                                            break;
+                                        case "PS2_Done":
+                                            DomainClassPSStateMachine.PS2_Done.Create(instanceOfPS, sendNow:true);
+                                            sent = true;
+                                            break;
+                                        case "PS3_Prepared":
+                                            DomainClassPSStateMachine.PS3_Prepared.Create(instanceOfPS, sendNow:true);
+                                            sent = true;
+                                            break;
+                                    }
+                                    break;
+                                case "P":
+                                    var instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == invSpec.Identities["Process_ID"])).FirstOrDefault();
+                                    switch (name)
+                                    {
+                                        case "P1_StartProcess":
+                                            DomainClassPStateMachine.P1_StartProcess.Create(instanceOfP, Requester_ID:(string)invSpec.Parameters["Requester_ID"], Resource_ID:(string)invSpec.Parameters["Resource_ID"], sendNow:true, domainModel.InstanceRepository, logger:logger);
+                                            sent = true;
+                                            break;
+                                        case "P2_ProceedProcessStep":
+                                            DomainClassPStateMachine.P2_ProceedProcessStep.Create(instanceOfP, sendNow:true);
+                                            sent = true;
+                                            break;
+                                        case "P3_DoneAllSteps":
+                                            DomainClassPStateMachine.P3_DoneAllSteps.Create(instanceOfP, sendNow:true);
+                                            sent = true;
+                                            break;
+                                    }
+                                    break;
                                 case "REQ":
-                                    var instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"])).First();
+                                    var instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"])).FirstOrDefault();
                                     switch (name)
                                     {
                                         case "REQ1_RequestProcess":
@@ -626,7 +708,7 @@ namespace ProcessManagement.Adaptor
                                     }
                                     break;
                                 case "RES":
-                                    var instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"])).First();
+                                    var instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"])).FirstOrDefault();
                                     switch (name)
                                     {
                                         case "RES1_Freed":
@@ -640,7 +722,7 @@ namespace ProcessManagement.Adaptor
                                     }
                                     break;
                                 case "RA":
-                                    var instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == invSpec.Identities["RA_ID"])).First();
+                                    var instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == invSpec.Identities["RA_ID"])).FirstOrDefault();
                                     switch (name)
                                     {
                                         case "RA1_RequestResource":
@@ -657,44 +739,8 @@ namespace ProcessManagement.Adaptor
                                             break;
                                     }
                                     break;
-                                case "P":
-                                    var instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == invSpec.Identities["Process_ID"])).First();
-                                    switch (name)
-                                    {
-                                        case "P1_StartProcess":
-                                            DomainClassPStateMachine.P1_StartProcess.Create(instanceOfP, Requester_ID:(string)invSpec.Parameters["Requester_ID"], Resource_ID:(string)invSpec.Parameters["Resource_ID"], sendNow:true, domainModel.InstanceRepository, logger:logger);
-                                            sent = true;
-                                            break;
-                                        case "P2_ProceedProcessStep":
-                                            DomainClassPStateMachine.P2_ProceedProcessStep.Create(instanceOfP, sendNow:true);
-                                            sent = true;
-                                            break;
-                                        case "P3_DoneAllSteps":
-                                            DomainClassPStateMachine.P3_DoneAllSteps.Create(instanceOfP, sendNow:true);
-                                            sent = true;
-                                            break;
-                                    }
-                                    break;
-                                case "PS":
-                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).First();
-                                    switch (name)
-                                    {
-                                        case "PS1_Start":
-                                            DomainClassPSStateMachine.PS1_Start.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
-                                            break;
-                                        case "PS2_Done":
-                                            DomainClassPSStateMachine.PS2_Done.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
-                                            break;
-                                        case "PS3_Prepared":
-                                            DomainClassPSStateMachine.PS3_Prepared.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
-                                            break;
-                                    }
-                                    break;
                                 case "IW":
-                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).First();
+                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).FirstOrDefault();
                                     switch (name)
                                     {
                                         case "IW1_Start":
@@ -722,13 +768,24 @@ namespace ProcessManagement.Adaptor
             if (classSpecs.ContainsKey(classKeyLett))
             {
                 var classSpec = classSpecs[classKeyLett];
-                var invSpec = new RequestingParameters();
+                var invSpec = new RequestingParameters() { Parameters = new Dictionary<string, object>(), Identities = new Dictionary<string, string>() };
                 if (CheckProperties(classSpec.Properties, parameters, invSpec))
                 {
                     switch (classKeyLett)
                     {
+                        case "PS":
+                            var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).FirstOrDefault();
+                            if (instanceOfPS != null)
+                            {
+                                if (invSpec.Parameters.ContainsKey("Finished"))
+                                {
+                                    instanceOfPS.Attr_Finished = (bool)invSpec.Parameters["Finished"];
+                                }
+                                updated = true;
+                            }
+                            break;
                         case "REQ":
-                            var instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"])).First();
+                            var instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"])).FirstOrDefault();
                             if (instanceOfREQ != null)
                             {
                                 if (invSpec.Parameters.ContainsKey("Step1Command"))
@@ -746,13 +803,25 @@ namespace ProcessManagement.Adaptor
                                 updated = true;
                             }
                             break;
-                        case "PS":
-                            var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).First();
-                            if (instanceOfPS != null)
+                        case "RA":
+                            var instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == invSpec.Identities["RA_ID"])).FirstOrDefault();
+                            if (instanceOfRA != null)
                             {
-                                if (invSpec.Parameters.ContainsKey("Finished"))
+                                if (invSpec.Parameters.ContainsKey("TestString"))
                                 {
-                                    instanceOfPS.Attr_Finished = (bool)invSpec.Parameters["Finished"];
+                                    instanceOfRA.Attr_TestString = (string)invSpec.Parameters["TestString"];
+                                }
+                                if (invSpec.Parameters.ContainsKey("TestInteger"))
+                                {
+                                    instanceOfRA.Attr_TestInteger = (int)invSpec.Parameters["TestInteger"];
+                                }
+                                if (invSpec.Parameters.ContainsKey("TestReal"))
+                                {
+                                    instanceOfRA.Attr_TestReal = (double)invSpec.Parameters["TestReal"];
+                                }
+                                if (invSpec.Parameters.ContainsKey("TestBoolean"))
+                                {
+                                    instanceOfRA.Attr_TestBoolean = (bool)invSpec.Parameters["TestBoolean"];
                                 }
                                 updated = true;
                             }
@@ -770,6 +839,13 @@ namespace ProcessManagement.Adaptor
 
         public override string GetInstances(string classKeyLett)
         {
+            List<Dictionary<string, object>> resultInstances = GetInstancesRaw(classKeyLett);
+
+            return Newtonsoft.Json.JsonConvert.SerializeObject(resultInstances);
+        }
+
+        protected List<Dictionary<string, object>> GetInstancesRaw(string classKeyLett)
+        {
             var resultInstances = new List<Dictionary<string, object>>();
             if (classSpecs.ContainsKey(classKeyLett))
             {
@@ -778,36 +854,23 @@ namespace ProcessManagement.Adaptor
                 {
                     switch (classKeyLett)
                     {
+                        case "PS":
+                            var instanceOfPS = (DomainClassPS)instance;
+                            var resultOfinstanceOfPS = new Dictionary<string, object>();
+                            resultOfinstanceOfPS.Add("ProcessSpec_ID", instanceOfPS.Attr_ProcessSpec_ID);
+                            resultOfinstanceOfPS.Add("Order_ID", instanceOfPS.Attr_Order_ID);
+                            resultOfinstanceOfPS.Add("Number", instanceOfPS.Attr_Number);
+                            resultOfinstanceOfPS.Add("Process_ID", instanceOfPS.Attr_Process_ID);
+                            resultOfinstanceOfPS.Add("Finished", instanceOfPS.Attr_Finished);
+                            resultOfinstanceOfPS.Add("current_state", instanceOfPS.Attr_current_state);
+                            resultInstances.Add(resultOfinstanceOfPS);
+                            break;
                         case "OS":
                             var instanceOfOS = (DomainClassOS)instance;
                             var resultOfinstanceOfOS = new Dictionary<string, object>();
                             resultOfinstanceOfOS.Add("Order_ID", instanceOfOS.Attr_Order_ID);
                             resultOfinstanceOfOS.Add("Command", instanceOfOS.Attr_Command);
-                            break;
-                        case "REQ":
-                            var instanceOfREQ = (DomainClassREQ)instance;
-                            var resultOfinstanceOfREQ = new Dictionary<string, object>();
-                            resultOfinstanceOfREQ.Add("Requester_ID", instanceOfREQ.Attr_Requester_ID);
-                            resultOfinstanceOfREQ.Add("current_state", instanceOfREQ.Attr_current_state);
-                            resultOfinstanceOfREQ.Add("Step1Command", instanceOfREQ.Attr_Step1Command);
-                            resultOfinstanceOfREQ.Add("Step2Command", instanceOfREQ.Attr_Step2Command);
-                            resultOfinstanceOfREQ.Add("Step3Command", instanceOfREQ.Attr_Step3Command);
-                            resultOfinstanceOfREQ.Add("RequestingResource_ID", instanceOfREQ.Attr_RequestingResource_ID);
-                            break;
-                        case "RES":
-                            var instanceOfRES = (DomainClassRES)instance;
-                            var resultOfinstanceOfRES = new Dictionary<string, object>();
-                            resultOfinstanceOfRES.Add("Resource_ID", instanceOfRES.Attr_Resource_ID);
-                            resultOfinstanceOfRES.Add("current_state", instanceOfRES.Attr_current_state);
-                            resultOfinstanceOfRES.Add("Name", instanceOfRES.Attr_Name);
-                            resultOfinstanceOfRES.Add("RA_ID", instanceOfRES.Attr_RA_ID);
-                            break;
-                        case "RA":
-                            var instanceOfRA = (DomainClassRA)instance;
-                            var resultOfinstanceOfRA = new Dictionary<string, object>();
-                            resultOfinstanceOfRA.Add("RA_ID", instanceOfRA.Attr_RA_ID);
-                            resultOfinstanceOfRA.Add("current_state", instanceOfRA.Attr_current_state);
-                            resultOfinstanceOfRA.Add("Name", instanceOfRA.Attr_Name);
+                            resultInstances.Add(resultOfinstanceOfOS);
                             break;
                         case "P":
                             var instanceOfP = (DomainClassP)instance;
@@ -818,16 +881,39 @@ namespace ProcessManagement.Adaptor
                             resultOfinstanceOfP.Add("Process_ID", instanceOfP.Attr_Process_ID);
                             resultOfinstanceOfP.Add("firstProcessSpec_ID", instanceOfP.Attr_firstProcessSpec_ID);
                             resultOfinstanceOfP.Add("currentProcessSpec_ID", instanceOfP.Attr_currentProcessSpec_ID);
+                            resultInstances.Add(resultOfinstanceOfP);
                             break;
-                        case "PS":
-                            var instanceOfPS = (DomainClassPS)instance;
-                            var resultOfinstanceOfPS = new Dictionary<string, object>();
-                            resultOfinstanceOfPS.Add("ProcessSpec_ID", instanceOfPS.Attr_ProcessSpec_ID);
-                            resultOfinstanceOfPS.Add("Order_ID", instanceOfPS.Attr_Order_ID);
-                            resultOfinstanceOfPS.Add("Number", instanceOfPS.Attr_Number);
-                            resultOfinstanceOfPS.Add("Process_ID", instanceOfPS.Attr_Process_ID);
-                            resultOfinstanceOfPS.Add("Finished", instanceOfPS.Attr_Finished);
-                            resultOfinstanceOfPS.Add("current_state", instanceOfPS.Attr_current_state);
+                        case "REQ":
+                            var instanceOfREQ = (DomainClassREQ)instance;
+                            var resultOfinstanceOfREQ = new Dictionary<string, object>();
+                            resultOfinstanceOfREQ.Add("Requester_ID", instanceOfREQ.Attr_Requester_ID);
+                            resultOfinstanceOfREQ.Add("current_state", instanceOfREQ.Attr_current_state);
+                            resultOfinstanceOfREQ.Add("Step1Command", instanceOfREQ.Attr_Step1Command);
+                            resultOfinstanceOfREQ.Add("Step2Command", instanceOfREQ.Attr_Step2Command);
+                            resultOfinstanceOfREQ.Add("Step3Command", instanceOfREQ.Attr_Step3Command);
+                            resultOfinstanceOfREQ.Add("RequestingResource_ID", instanceOfREQ.Attr_RequestingResource_ID);
+                            resultInstances.Add(resultOfinstanceOfREQ);
+                            break;
+                        case "RES":
+                            var instanceOfRES = (DomainClassRES)instance;
+                            var resultOfinstanceOfRES = new Dictionary<string, object>();
+                            resultOfinstanceOfRES.Add("Resource_ID", instanceOfRES.Attr_Resource_ID);
+                            resultOfinstanceOfRES.Add("current_state", instanceOfRES.Attr_current_state);
+                            resultOfinstanceOfRES.Add("Name", instanceOfRES.Attr_Name);
+                            resultOfinstanceOfRES.Add("RA_ID", instanceOfRES.Attr_RA_ID);
+                            resultInstances.Add(resultOfinstanceOfRES);
+                            break;
+                        case "RA":
+                            var instanceOfRA = (DomainClassRA)instance;
+                            var resultOfinstanceOfRA = new Dictionary<string, object>();
+                            resultOfinstanceOfRA.Add("RA_ID", instanceOfRA.Attr_RA_ID);
+                            resultOfinstanceOfRA.Add("current_state", instanceOfRA.Attr_current_state);
+                            resultOfinstanceOfRA.Add("Name", instanceOfRA.Attr_Name);
+                            resultOfinstanceOfRA.Add("TestString", instanceOfRA.Attr_TestString);
+                            resultOfinstanceOfRA.Add("TestInteger", instanceOfRA.Attr_TestInteger);
+                            resultOfinstanceOfRA.Add("TestReal", instanceOfRA.Attr_TestReal);
+                            resultOfinstanceOfRA.Add("TestBoolean", instanceOfRA.Attr_TestBoolean);
+                            resultInstances.Add(resultOfinstanceOfRA);
                             break;
                         case "IW":
                             var instanceOfIW = (DomainClassIW)instance;
@@ -835,13 +921,14 @@ namespace ProcessManagement.Adaptor
                             resultOfinstanceOfIW.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
                             resultOfinstanceOfIW.Add("successorProcessSpec_ID", instanceOfIW.Attr_successorProcessSpec_ID);
                             resultOfinstanceOfIW.Add("current_state", instanceOfIW.Attr_current_state);
+                            resultInstances.Add(resultOfinstanceOfIW);
                             break;
                     }
                 }
                 
             }
 
-            return Newtonsoft.Json.JsonConvert.SerializeObject(resultInstances);
+            return resultInstances;
         }
 
         public override string GetInstance(string classKeyLett, IDictionary<string, string> identities)
@@ -849,16 +936,40 @@ namespace ProcessManagement.Adaptor
             Dictionary<string, object> resultInstance = new Dictionary<string, object>();
             switch (classKeyLett)
             {
+                case "PS":
+                    DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).FirstOrDefault();
+                    if (instanceOfPS != null)
+                    {
+                        resultInstance.Add("ProcessSpec_ID", instanceOfPS.Attr_ProcessSpec_ID);
+                        resultInstance.Add("Order_ID", instanceOfPS.Attr_Order_ID);
+                        resultInstance.Add("Number", instanceOfPS.Attr_Number);
+                        resultInstance.Add("Process_ID", instanceOfPS.Attr_Process_ID);
+                        resultInstance.Add("Finished", instanceOfPS.Attr_Finished);
+                        resultInstance.Add("current_state", instanceOfPS.Attr_current_state);
+                    }
+                    break;
                 case "OS":
-                    DomainClassOS instanceOfOS = (DomainClassOS)domainModel.InstanceRepository.GetDomainInstances("OS").Where(selected => (((DomainClassOS)selected).Attr_Order_ID == identities["Order_ID"])).First();
+                    DomainClassOS instanceOfOS = (DomainClassOS)domainModel.InstanceRepository.GetDomainInstances("OS").Where(selected => (((DomainClassOS)selected).Attr_Order_ID == identities["Order_ID"])).FirstOrDefault();
                     if (instanceOfOS != null)
                     {
                         resultInstance.Add("Order_ID", instanceOfOS.Attr_Order_ID);
                         resultInstance.Add("Command", instanceOfOS.Attr_Command);
                     }
                     break;
+                case "P":
+                    DomainClassP instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == identities["Process_ID"])).FirstOrDefault();
+                    if (instanceOfP != null)
+                    {
+                        resultInstance.Add("current_state", instanceOfP.Attr_current_state);
+                        resultInstance.Add("Requester_ID", instanceOfP.Attr_Requester_ID);
+                        resultInstance.Add("Resource_ID", instanceOfP.Attr_Resource_ID);
+                        resultInstance.Add("Process_ID", instanceOfP.Attr_Process_ID);
+                        resultInstance.Add("firstProcessSpec_ID", instanceOfP.Attr_firstProcessSpec_ID);
+                        resultInstance.Add("currentProcessSpec_ID", instanceOfP.Attr_currentProcessSpec_ID);
+                    }
+                    break;
                 case "REQ":
-                    DomainClassREQ instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == identities["Requester_ID"])).First();
+                    DomainClassREQ instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == identities["Requester_ID"])).FirstOrDefault();
                     if (instanceOfREQ != null)
                     {
                         resultInstance.Add("Requester_ID", instanceOfREQ.Attr_Requester_ID);
@@ -870,7 +981,7 @@ namespace ProcessManagement.Adaptor
                     }
                     break;
                 case "RES":
-                    DomainClassRES instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == identities["Resource_ID"])).First();
+                    DomainClassRES instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == identities["Resource_ID"])).FirstOrDefault();
                     if (instanceOfRES != null)
                     {
                         resultInstance.Add("Resource_ID", instanceOfRES.Attr_Resource_ID);
@@ -880,40 +991,20 @@ namespace ProcessManagement.Adaptor
                     }
                     break;
                 case "RA":
-                    DomainClassRA instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == identities["RA_ID"])).First();
+                    DomainClassRA instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == identities["RA_ID"])).FirstOrDefault();
                     if (instanceOfRA != null)
                     {
                         resultInstance.Add("RA_ID", instanceOfRA.Attr_RA_ID);
                         resultInstance.Add("current_state", instanceOfRA.Attr_current_state);
                         resultInstance.Add("Name", instanceOfRA.Attr_Name);
-                    }
-                    break;
-                case "P":
-                    DomainClassP instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == identities["Process_ID"])).First();
-                    if (instanceOfP != null)
-                    {
-                        resultInstance.Add("current_state", instanceOfP.Attr_current_state);
-                        resultInstance.Add("Requester_ID", instanceOfP.Attr_Requester_ID);
-                        resultInstance.Add("Resource_ID", instanceOfP.Attr_Resource_ID);
-                        resultInstance.Add("Process_ID", instanceOfP.Attr_Process_ID);
-                        resultInstance.Add("firstProcessSpec_ID", instanceOfP.Attr_firstProcessSpec_ID);
-                        resultInstance.Add("currentProcessSpec_ID", instanceOfP.Attr_currentProcessSpec_ID);
-                    }
-                    break;
-                case "PS":
-                    DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).First();
-                    if (instanceOfPS != null)
-                    {
-                        resultInstance.Add("ProcessSpec_ID", instanceOfPS.Attr_ProcessSpec_ID);
-                        resultInstance.Add("Order_ID", instanceOfPS.Attr_Order_ID);
-                        resultInstance.Add("Number", instanceOfPS.Attr_Number);
-                        resultInstance.Add("Process_ID", instanceOfPS.Attr_Process_ID);
-                        resultInstance.Add("Finished", instanceOfPS.Attr_Finished);
-                        resultInstance.Add("current_state", instanceOfPS.Attr_current_state);
+                        resultInstance.Add("TestString", instanceOfRA.Attr_TestString);
+                        resultInstance.Add("TestInteger", instanceOfRA.Attr_TestInteger);
+                        resultInstance.Add("TestReal", instanceOfRA.Attr_TestReal);
+                        resultInstance.Add("TestBoolean", instanceOfRA.Attr_TestBoolean);
                     }
                     break;
                 case "IW":
-                    DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).First();
+                    DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
                     if (instanceOfIW != null)
                     {
                         resultInstance.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
@@ -935,224 +1026,8 @@ namespace ProcessManagement.Adaptor
                 {
                     switch (classKeyLett)
                     {
-                        case "OS":
-                            DomainClassOS instanceOfOS = (DomainClassOS)domainModel.InstanceRepository.GetDomainInstances("OS").Where(selected => (((DomainClassOS)selected).Attr_Order_ID == identities["Order_ID"])).First();
-                            if (instanceOfOS != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "PS[R4]":
-                                        var linkedInstancesOfR4PS = instanceOfOS.LinkedR4();
-                                        foreach (var linkedInstanceOfR4PS in linkedInstancesOfR4PS)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR4PS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR4PS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR4PS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR4PS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR4PS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR4PS.Attr_current_state }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
-                        case "REQ":
-                            DomainClassREQ instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == identities["Requester_ID"])).First();
-                            if (instanceOfREQ != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "P[R1.'is used by']":
-                                        var linkedInstanceOfR1OneIsUsedByP = instanceOfREQ.LinkedR1OtherIsUserOf();
-                                        if (linkedInstanceOfR1OneIsUsedByP != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "current_state", linkedInstanceOfR1OneIsUsedByP.Attr_current_state },
-                                                { "Requester_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Requester_ID },
-                                                { "Resource_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Resource_ID },
-                                                { "Process_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Process_ID },
-                                                { "firstProcessSpec_ID", linkedInstanceOfR1OneIsUsedByP.Attr_firstProcessSpec_ID },
-                                                { "currentProcessSpec_ID", linkedInstanceOfR1OneIsUsedByP.Attr_currentProcessSpec_ID }
-                                            });
-                                        }
-                                        break;
-                                    case "RES[R8.'is requesting']":
-                                        var linkedInstanceOfR8IsRequestingRES = instanceOfREQ.LinkedR8IsRequesting();
-                                        if (linkedInstanceOfR8IsRequestingRES != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "Resource_ID", linkedInstanceOfR8IsRequestingRES.Attr_Resource_ID },
-                                                { "current_state", linkedInstanceOfR8IsRequestingRES.Attr_current_state },
-                                                { "Name", linkedInstanceOfR8IsRequestingRES.Attr_Name },
-                                                { "RA_ID", linkedInstanceOfR8IsRequestingRES.Attr_RA_ID }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
-                        case "RES":
-                            DomainClassRES instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == identities["Resource_ID"])).First();
-                            if (instanceOfRES != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "P[R1.'is user of']":
-                                        var linkedInstanceOfR1OtherIsUserOfP = instanceOfRES.LinkedR1OneIsUsedBy();
-                                        if (linkedInstanceOfR1OtherIsUserOfP != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "current_state", linkedInstanceOfR1OtherIsUserOfP.Attr_current_state },
-                                                { "Requester_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Requester_ID },
-                                                { "Resource_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Resource_ID },
-                                                { "Process_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Process_ID },
-                                                { "firstProcessSpec_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_firstProcessSpec_ID },
-                                                { "currentProcessSpec_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_currentProcessSpec_ID }
-                                            });
-                                        }
-                                        break;
-                                    case "REQ[R8]":
-                                        var linkedInstancesOfR8REQ = instanceOfRES.LinkedR8();
-                                        foreach (var linkedInstanceOfR8REQ in linkedInstancesOfR8REQ)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "Requester_ID", linkedInstanceOfR8REQ.Attr_Requester_ID },
-                                                { "current_state", linkedInstanceOfR8REQ.Attr_current_state },
-                                                { "Step1Command", linkedInstanceOfR8REQ.Attr_Step1Command },
-                                                { "Step2Command", linkedInstanceOfR8REQ.Attr_Step2Command },
-                                                { "Step3Command", linkedInstanceOfR8REQ.Attr_Step3Command },
-                                                { "RequestingResource_ID", linkedInstanceOfR8REQ.Attr_RequestingResource_ID }
-                                            });
-                                        }
-                                        break;
-                                    case "RA[R6]":
-                                        var linkedInstanceOfR6RA = instanceOfRES.LinkedR6();
-                                        if (linkedInstanceOfR6RA != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "RA_ID", linkedInstanceOfR6RA.Attr_RA_ID },
-                                                { "current_state", linkedInstanceOfR6RA.Attr_current_state },
-                                                { "Name", linkedInstanceOfR6RA.Attr_Name }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
-                        case "RA":
-                            DomainClassRA instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == identities["RA_ID"])).First();
-                            if (instanceOfRA != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "RES[R6]":
-                                        var linkedInstancesOfR6RES = instanceOfRA.LinkedR6();
-                                        foreach (var linkedInstanceOfR6RES in linkedInstancesOfR6RES)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "Resource_ID", linkedInstanceOfR6RES.Attr_Resource_ID },
-                                                { "current_state", linkedInstanceOfR6RES.Attr_current_state },
-                                                { "Name", linkedInstanceOfR6RES.Attr_Name },
-                                                { "RA_ID", linkedInstanceOfR6RES.Attr_RA_ID }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
-                        case "P":
-                            DomainClassP instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == identities["Process_ID"])).First();
-                            if (instanceOfP != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "PS[R2]":
-                                        var linkedInstancesOfR2PS = instanceOfP.LinkedR2();
-                                        foreach (var linkedInstanceOfR2PS in linkedInstancesOfR2PS)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR2PS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR2PS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR2PS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR2PS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR2PS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR2PS.Attr_current_state }
-                                            });
-                                        }
-                                        break;
-                                    case "REQ[R1.'is used by']":
-                                        var linkedInstanceOfR1OneIsUsedByREQ = instanceOfP.LinkedR1OneIsUsedBy();
-                                        if (linkedInstanceOfR1OneIsUsedByREQ != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "Requester_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_Requester_ID },
-                                                { "current_state", linkedInstanceOfR1OneIsUsedByREQ.Attr_current_state },
-                                                { "Step1Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step1Command },
-                                                { "Step2Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step2Command },
-                                                { "Step3Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step3Command },
-                                                { "RequestingResource_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_RequestingResource_ID }
-                                            });
-                                        }
-                                        break;
-                                    case "RES[R1.'is user of']":
-                                        var linkedInstanceOfR1OtherIsUserOfRES = instanceOfP.LinkedR1OtherIsUserOf();
-                                        if (linkedInstanceOfR1OtherIsUserOfRES != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "Resource_ID", linkedInstanceOfR1OtherIsUserOfRES.Attr_Resource_ID },
-                                                { "current_state", linkedInstanceOfR1OtherIsUserOfRES.Attr_current_state },
-                                                { "Name", linkedInstanceOfR1OtherIsUserOfRES.Attr_Name },
-                                                { "RA_ID", linkedInstanceOfR1OtherIsUserOfRES.Attr_RA_ID }
-                                            });
-                                        }
-                                        break;
-                                    case "PS[R3.'first step']":
-                                        var linkedInstanceOfR3FirstStepPS = instanceOfP.LinkedR3FirstStep();
-                                        if (linkedInstanceOfR3FirstStepPS != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR3FirstStepPS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR3FirstStepPS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR3FirstStepPS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR3FirstStepPS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR3FirstStepPS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR3FirstStepPS.Attr_current_state }
-                                            });
-                                        }
-                                        break;
-                                    case "PS[R7.'current step']":
-                                        var linkedInstanceOfR7CurrentStepPS = instanceOfP.LinkedR7CurrentStep();
-                                        if (linkedInstanceOfR7CurrentStepPS != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR7CurrentStepPS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR7CurrentStepPS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR7CurrentStepPS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR7CurrentStepPS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR7CurrentStepPS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR7CurrentStepPS.Attr_current_state }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
                         case "PS":
-                            DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).First();
+                            DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).FirstOrDefault();
                             if (instanceOfPS != null)
                             {
                                 switch (relName)
@@ -1240,8 +1115,228 @@ namespace ProcessManagement.Adaptor
                                 }
                             }
                             break;
+                        case "OS":
+                            DomainClassOS instanceOfOS = (DomainClassOS)domainModel.InstanceRepository.GetDomainInstances("OS").Where(selected => (((DomainClassOS)selected).Attr_Order_ID == identities["Order_ID"])).FirstOrDefault();
+                            if (instanceOfOS != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "PS[R4]":
+                                        var linkedInstancesOfR4PS = instanceOfOS.LinkedR4();
+                                        foreach (var linkedInstanceOfR4PS in linkedInstancesOfR4PS)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR4PS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR4PS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR4PS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR4PS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR4PS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR4PS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case "P":
+                            DomainClassP instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == identities["Process_ID"])).FirstOrDefault();
+                            if (instanceOfP != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "PS[R2]":
+                                        var linkedInstancesOfR2PS = instanceOfP.LinkedR2();
+                                        foreach (var linkedInstanceOfR2PS in linkedInstancesOfR2PS)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR2PS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR2PS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR2PS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR2PS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR2PS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR2PS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                    case "REQ[R1.'is used by']":
+                                        var linkedInstanceOfR1OneIsUsedByREQ = instanceOfP.LinkedR1OneIsUsedBy();
+                                        if (linkedInstanceOfR1OneIsUsedByREQ != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "Requester_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_Requester_ID },
+                                                { "current_state", linkedInstanceOfR1OneIsUsedByREQ.Attr_current_state },
+                                                { "Step1Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step1Command },
+                                                { "Step2Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step2Command },
+                                                { "Step3Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step3Command },
+                                                { "RequestingResource_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_RequestingResource_ID }
+                                            });
+                                        }
+                                        break;
+                                    case "RES[R1.'is user of']":
+                                        var linkedInstanceOfR1OtherIsUserOfRES = instanceOfP.LinkedR1OtherIsUserOf();
+                                        if (linkedInstanceOfR1OtherIsUserOfRES != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "Resource_ID", linkedInstanceOfR1OtherIsUserOfRES.Attr_Resource_ID },
+                                                { "current_state", linkedInstanceOfR1OtherIsUserOfRES.Attr_current_state },
+                                                { "Name", linkedInstanceOfR1OtherIsUserOfRES.Attr_Name },
+                                                { "RA_ID", linkedInstanceOfR1OtherIsUserOfRES.Attr_RA_ID }
+                                            });
+                                        }
+                                        break;
+                                    case "PS[R3.'first step']":
+                                        var linkedInstanceOfR3FirstStepPS = instanceOfP.LinkedR3FirstStep();
+                                        if (linkedInstanceOfR3FirstStepPS != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR3FirstStepPS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR3FirstStepPS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR3FirstStepPS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR3FirstStepPS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR3FirstStepPS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR3FirstStepPS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                    case "PS[R7.'current step']":
+                                        var linkedInstanceOfR7CurrentStepPS = instanceOfP.LinkedR7CurrentStep();
+                                        if (linkedInstanceOfR7CurrentStepPS != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR7CurrentStepPS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR7CurrentStepPS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR7CurrentStepPS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR7CurrentStepPS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR7CurrentStepPS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR7CurrentStepPS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case "REQ":
+                            DomainClassREQ instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == identities["Requester_ID"])).FirstOrDefault();
+                            if (instanceOfREQ != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "P[R1.'is used by']":
+                                        var linkedInstanceOfR1OneIsUsedByP = instanceOfREQ.LinkedR1OtherIsUserOf();
+                                        if (linkedInstanceOfR1OneIsUsedByP != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "current_state", linkedInstanceOfR1OneIsUsedByP.Attr_current_state },
+                                                { "Requester_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Requester_ID },
+                                                { "Resource_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Resource_ID },
+                                                { "Process_ID", linkedInstanceOfR1OneIsUsedByP.Attr_Process_ID },
+                                                { "firstProcessSpec_ID", linkedInstanceOfR1OneIsUsedByP.Attr_firstProcessSpec_ID },
+                                                { "currentProcessSpec_ID", linkedInstanceOfR1OneIsUsedByP.Attr_currentProcessSpec_ID }
+                                            });
+                                        }
+                                        break;
+                                    case "RES[R8.'is requesting']":
+                                        var linkedInstanceOfR8IsRequestingRES = instanceOfREQ.LinkedR8IsRequesting();
+                                        if (linkedInstanceOfR8IsRequestingRES != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "Resource_ID", linkedInstanceOfR8IsRequestingRES.Attr_Resource_ID },
+                                                { "current_state", linkedInstanceOfR8IsRequestingRES.Attr_current_state },
+                                                { "Name", linkedInstanceOfR8IsRequestingRES.Attr_Name },
+                                                { "RA_ID", linkedInstanceOfR8IsRequestingRES.Attr_RA_ID }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case "RES":
+                            DomainClassRES instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == identities["Resource_ID"])).FirstOrDefault();
+                            if (instanceOfRES != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "P[R1.'is user of']":
+                                        var linkedInstanceOfR1OtherIsUserOfP = instanceOfRES.LinkedR1OneIsUsedBy();
+                                        if (linkedInstanceOfR1OtherIsUserOfP != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "current_state", linkedInstanceOfR1OtherIsUserOfP.Attr_current_state },
+                                                { "Requester_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Requester_ID },
+                                                { "Resource_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Resource_ID },
+                                                { "Process_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_Process_ID },
+                                                { "firstProcessSpec_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_firstProcessSpec_ID },
+                                                { "currentProcessSpec_ID", linkedInstanceOfR1OtherIsUserOfP.Attr_currentProcessSpec_ID }
+                                            });
+                                        }
+                                        break;
+                                    case "REQ[R8]":
+                                        var linkedInstancesOfR8REQ = instanceOfRES.LinkedR8();
+                                        foreach (var linkedInstanceOfR8REQ in linkedInstancesOfR8REQ)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "Requester_ID", linkedInstanceOfR8REQ.Attr_Requester_ID },
+                                                { "current_state", linkedInstanceOfR8REQ.Attr_current_state },
+                                                { "Step1Command", linkedInstanceOfR8REQ.Attr_Step1Command },
+                                                { "Step2Command", linkedInstanceOfR8REQ.Attr_Step2Command },
+                                                { "Step3Command", linkedInstanceOfR8REQ.Attr_Step3Command },
+                                                { "RequestingResource_ID", linkedInstanceOfR8REQ.Attr_RequestingResource_ID }
+                                            });
+                                        }
+                                        break;
+                                    case "RA[R6]":
+                                        var linkedInstanceOfR6RA = instanceOfRES.LinkedR6();
+                                        if (linkedInstanceOfR6RA != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "RA_ID", linkedInstanceOfR6RA.Attr_RA_ID },
+                                                { "current_state", linkedInstanceOfR6RA.Attr_current_state },
+                                                { "Name", linkedInstanceOfR6RA.Attr_Name },
+                                                { "TestString", linkedInstanceOfR6RA.Attr_TestString },
+                                                { "TestInteger", linkedInstanceOfR6RA.Attr_TestInteger },
+                                                { "TestReal", linkedInstanceOfR6RA.Attr_TestReal },
+                                                { "TestBoolean", linkedInstanceOfR6RA.Attr_TestBoolean }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case "RA":
+                            DomainClassRA instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == identities["RA_ID"])).FirstOrDefault();
+                            if (instanceOfRA != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "RES[R6]":
+                                        var linkedInstancesOfR6RES = instanceOfRA.LinkedR6();
+                                        foreach (var linkedInstanceOfR6RES in linkedInstancesOfR6RES)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "Resource_ID", linkedInstanceOfR6RES.Attr_Resource_ID },
+                                                { "current_state", linkedInstanceOfR6RES.Attr_current_state },
+                                                { "Name", linkedInstanceOfR6RES.Attr_Name },
+                                                { "RA_ID", linkedInstanceOfR6RES.Attr_RA_ID }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
                         case "IW":
-                            DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).First();
+                            DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
                             if (instanceOfIW != null)
                             {
                                 switch (relName)
@@ -1298,5 +1393,42 @@ namespace ProcessManagement.Adaptor
             return result; 
         }
 
+        public override string GetDomainModelSpec()
+        {
+            var spec = new {
+                name = "ProcessManagement",
+                operations = domainOpsParamSpecs,
+                classes = classSpecs
+            };
+            string result = Newtonsoft.Json.JsonConvert.SerializeObject(spec);
+            return result;
+        }
+
+        public override void RegisterUpdateHandler(ClassPropertiesUpdateHandler classPropertiesUpdateHandler, RelationshipUpdateHandler relationshipUpdateHandler)
+        {
+            domainModel.InstanceRepository.ClassPropertiesUpdated += classPropertiesUpdateHandler;
+            domainModel.InstanceRepository.RelationshipUpdated += relationshipUpdateHandler;
+        }
+
+        public override void LoadDomainInstances(string instances)
+        {
+            string domainName = "ProcessManagement";
+            var instancesJson = Newtonsoft.Json.JsonConvert.DeserializeObject<IDictionary<string, IList<IDictionary<string, object>>>>(instances);
+            domainModel.InstanceRepository.LoadState(domainName, instancesJson);
+        }
+
+        public override string SaveDomainInstances()
+        {
+            Dictionary<string, List<Dictionary<string, object>>> instances = new Dictionary<string, List<Dictionary<string, object>>>();
+            foreach(var ck in classSpecs.Keys)
+            {
+                var classInstances = GetInstancesRaw(ck);
+                if (classInstances.Count > 0)
+                {
+                    instances.Add(ck, classInstances);
+                }
+            }
+            return Newtonsoft.Json.JsonConvert.SerializeObject(instances);
+        }
     }
 }

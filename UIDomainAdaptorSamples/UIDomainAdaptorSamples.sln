@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPIAppUIDomainAdaptor", "WebAPIAppUIDomainAdaptor\WebAPIAppUIDomainAdaptor.csproj", "{AB83716E-E8A9-4F99-A101-DA9223C5873C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessManagement", "ProcessManagement\ProcessManagement.csproj", "{CF0F5A80-10EE-4AB1-B38F-0552975A306F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer", "Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer\Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer.csproj", "{6B4FE115-A8E7-4D9B-881A-C9125D37C279}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer", "Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer\Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer.csproj", "{5A761227-6621-4F55-BF32-5BD7D045C42B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AB83716E-E8A9-4F99-A101-DA9223C5873C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB83716E-E8A9-4F99-A101-DA9223C5873C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB83716E-E8A9-4F99-A101-DA9223C5873C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB83716E-E8A9-4F99-A101-DA9223C5873C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CF0F5A80-10EE-4AB1-B38F-0552975A306F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CF0F5A80-10EE-4AB1-B38F-0552975A306F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF0F5A80-10EE-4AB1-B38F-0552975A306F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF0F5A80-10EE-4AB1-B38F-0552975A306F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B4FE115-A8E7-4D9B-881A-C9125D37C279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B4FE115-A8E7-4D9B-881A-C9125D37C279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B4FE115-A8E7-4D9B-881A-C9125D37C279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B4FE115-A8E7-4D9B-881A-C9125D37C279}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A761227-6621-4F55-BF32-5BD7D045C42B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A761227-6621-4F55-BF32-5BD7D045C42B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A761227-6621-4F55-BF32-5BD7D045C42B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A761227-6621-4F55-BF32-5BD7D045C42B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

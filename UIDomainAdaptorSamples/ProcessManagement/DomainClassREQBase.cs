@@ -121,7 +121,7 @@ namespace ProcessManagement
             if (relR8RESIsRequesting == null)
             {
            var candidates = instanceRepository.GetDomainInstances("RES").Where(inst=>(this.Attr_RequestingResource_ID==((DomainClassRES)inst).Attr_Resource_ID));
-           relR8RESIsRequesting = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R8", Phrase = "IsRequesting" };
+           relR8RESIsRequesting = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R8", Phrase = "IsRequesting" };
 
             }
             return relR8RESIsRequesting.GetDestination<DomainClassRES>();
@@ -165,7 +165,7 @@ namespace ProcessManagement
         public DomainClassP LinkedR1OtherIsUserOf()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Requester_ID==((DomainClassP)inst).Attr_Requester_ID));
-            return (DomainClassP)candidates.First();
+            return (DomainClassP)candidates.FirstOrDefault();
         }
 
 
@@ -247,6 +247,13 @@ namespace ProcessManagement
             }
 
             return results;
+        }
+
+        public string GetIdentities()
+        {
+            string identities = $"Requester_ID={this.Attr_Requester_ID}";
+
+            return identities;
         }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)

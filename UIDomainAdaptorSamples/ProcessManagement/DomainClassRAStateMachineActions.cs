@@ -29,7 +29,7 @@ namespace ProcessManagement
             var targetIn0RL0Set = target.LinkedR6();
             foreach (var targetIn0RL0 in targetIn0RL0Set)
             {
-                requester = targetIn0RL0.LinkedR8().First();
+                requester = targetIn0RL0.LinkedR8().FirstOrDefault();
                 break;
             }
 
@@ -77,7 +77,7 @@ namespace ProcessManagement
                 if (resource == null)
                 {
                     // Line : 5
-                    var requester = resource.LinkedR8().First();
+                    var requester = resource.LinkedR8().FirstOrDefault();
 
                     // Line : 6
                     if (requester != null)
@@ -128,7 +128,7 @@ namespace ProcessManagement
                 if (usingRequester == null)
                 {
                     // Line : 5
-                    var requester = resource.LinkedR8().First();
+                    var requester = resource.LinkedR8().FirstOrDefault();
 
                     // Line : 6
                     if (requester != null)

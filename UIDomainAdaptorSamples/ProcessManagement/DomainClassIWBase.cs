@@ -142,8 +142,8 @@ namespace ProcessManagement
             if (relR5PSSuccessor == null)
             {
                 var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_predecessorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
-                relR5PSSuccessor = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R5", Phrase = "Successor" };
-                // (DomainClassPS)candidates.First();
+                relR5PSSuccessor = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R5", Phrase = "Successor" };
+                // (DomainClassPS)candidates.FirstOrDefault();
             }
             return relR5PSSuccessor.GetDestination<DomainClassPS>();
         }
@@ -153,8 +153,8 @@ namespace ProcessManagement
             if (relR5PSPredecessor == null)
             {
                 var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_predecessorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
-                relR5PSPredecessor = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R5", Phrase = "Predecessor" };
-                // (DomainClassPS)candidates.First();
+                relR5PSPredecessor = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R5", Phrase = "Predecessor" };
+                // (DomainClassPS)candidates.FirstOrDefault();
             }
             return relR5PSPredecessor.GetDestination<DomainClassPS>();
         }
@@ -225,6 +225,13 @@ namespace ProcessManagement
 
 
             return results;
+        }
+
+        public string GetIdentities()
+        {
+            string identities = $"predecessorProcessSpec_ID={this.Attr_predecessorProcessSpec_ID},successorProcessSpec_ID={this.Attr_successorProcessSpec_ID}";
+
+            return identities;
         }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)

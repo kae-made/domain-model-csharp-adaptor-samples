@@ -1,0 +1,203 @@
+{
+  "version": 3,
+  "targets": {
+    "net5.0": {
+      "Kae.DomainModel.Csharp.Framework/5.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Kae.StateMachine": "0.3.0"
+        },
+        "compile": {
+          "lib/net5.0/Kae.DomainModel.Csharp.Framework.dll": {}
+        },
+        "runtime": {
+          "lib/net5.0/Kae.DomainModel.Csharp.Framework.dll": {}
+        }
+      },
+      "Kae.StateMachine/0.3.0": {
+        "type": "package",
+        "dependencies": {
+          "Kae.Utility.Logging": "1.0.0"
+        },
+        "compile": {
+          "lib/netcoreapp3.1/Kae.StateMachine.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/Kae.StateMachine.dll": {}
+        }
+      },
+      "Kae.Utility.Logging/1.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netcoreapp3.1/Kae.Utility.Logging.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/Kae.Utility.Logging.dll": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Kae.DomainModel.Csharp.Framework/5.0.1": {
+      "sha512": "mGFJL02AsoIEGxLVUPaa4mZXJQ/Wt2bKqW13pScsTaOFtGymLZTYEMceLAyOOYXNQ2ji8KehzuTXl2KIKfunbg==",
+      "type": "package",
+      "path": "kae.domainmodel.csharp.framework/5.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "kae.domainmodel.csharp.framework.5.0.1.nupkg.sha512",
+        "kae.domainmodel.csharp.framework.nuspec",
+        "lib/net5.0/Kae.DomainModel.Csharp.Framework.dll"
+      ]
+    },
+    "Kae.StateMachine/0.3.0": {
+      "sha512": "cLowZuup4/JiHQI9zn1x6sdwU3tYq0JIRVv1DwMCL2ZDwS/UVjMSenrsOiXv4NetYgit08xaskQD2SHjKBZJSQ==",
+      "type": "package",
+      "path": "kae.statemachine/0.3.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "kae.statemachine.0.3.0.nupkg.sha512",
+        "kae.statemachine.nuspec",
+        "lib/netcoreapp3.1/Kae.StateMachine.dll"
+      ]
+    },
+    "Kae.Utility.Logging/1.0.0": {
+      "sha512": "kWAcz3dde8wCN1yag2aRJB8Ui6NV8kb2N8mmjNdUpM+BaW3k06y2k7tnh/sH087nEM559WR6bzcKe4z5zusxlg==",
+      "type": "package",
+      "path": "kae.utility.logging/1.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "kae.utility.logging.1.0.0.nupkg.sha512",
+        "kae.utility.logging.nuspec",
+        "lib/netcoreapp3.1/Kae.Utility.Logging.dll"
+      ]
+    },
+    "Newtonsoft.Json/13.0.1": {
+      "sha512": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "newtonsoft.json.13.0.1.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net5.0": [
+      "Kae.DomainModel.Csharp.Framework >= 5.0.1",
+      "Kae.StateMachine >= 0.3.0",
+      "Kae.Utility.Logging >= 1.0.0",
+      "Newtonsoft.Json >= 13.0.1"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\kae-m\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\kae-m\\source\\repos\\UIDomainAdaptorSamples\\ProcessManagement\\ProcessManagement.csproj",
+      "projectName": "ProcessManagement",
+      "projectPath": "C:\\Users\\kae-m\\source\\repos\\UIDomainAdaptorSamples\\ProcessManagement\\ProcessManagement.csproj",
+      "packagesPath": "C:\\Users\\kae-m\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\kae-m\\source\\repos\\UIDomainAdaptorSamples\\ProcessManagement\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\kae-m\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net5.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net5.0": {
+        "targetAlias": "net5.0",
+        "dependencies": {
+          "Kae.DomainModel.Csharp.Framework": {
+            "target": "Package",
+            "version": "[5.0.1, )"
+          },
+          "Kae.StateMachine": {
+            "target": "Package",
+            "version": "[0.3.0, )"
+          },
+          "Kae.Utility.Logging": {
+            "target": "Package",
+            "version": "[1.0.0, )"
+          },
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.1, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.303\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

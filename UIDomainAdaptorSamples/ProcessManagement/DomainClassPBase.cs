@@ -175,8 +175,8 @@ namespace ProcessManagement
             if (relR1REQIsUsedBy == null)
             {
                 var candidates = instanceRepository.GetDomainInstances("REQ").Where(inst=>(this.Attr_Requester_ID==((DomainClassREQ)inst).Attr_Requester_ID));
-                relR1REQIsUsedBy = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R1", Phrase = "IsUsedBy" };
-                // (DomainClassREQ)candidates.First();
+                relR1REQIsUsedBy = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R1", Phrase = "IsUsedBy" };
+                // (DomainClassREQ)candidates.FirstOrDefault();
             }
             return relR1REQIsUsedBy.GetDestination<DomainClassREQ>();
         }
@@ -186,8 +186,8 @@ namespace ProcessManagement
             if (relR1RESIsUserOf == null)
             {
                 var candidates = instanceRepository.GetDomainInstances("RES").Where(inst=>(this.Attr_Resource_ID==((DomainClassRES)inst).Attr_Resource_ID));
-                relR1RESIsUserOf = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R1", Phrase = "IsUserOf" };
-                // (DomainClassRES)candidates.First();
+                relR1RESIsUserOf = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R1", Phrase = "IsUserOf" };
+                // (DomainClassRES)candidates.FirstOrDefault();
             }
             return relR1RESIsUserOf.GetDestination<DomainClassRES>();
         }
@@ -197,7 +197,7 @@ namespace ProcessManagement
             if (relR3PSFirstStep == null)
             {
            var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_firstProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
-           relR3PSFirstStep = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R3", Phrase = "FirstStep" };
+           relR3PSFirstStep = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R3", Phrase = "FirstStep" };
 
             }
             return relR3PSFirstStep.GetDestination<DomainClassPS>();
@@ -243,7 +243,7 @@ namespace ProcessManagement
             if (relR7PSCurrentStep == null)
             {
            var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_currentProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
-           relR7PSCurrentStep = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R7", Phrase = "CurrentStep" };
+           relR7PSCurrentStep = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R7", Phrase = "CurrentStep" };
 
             }
             return relR7PSCurrentStep.GetDestination<DomainClassPS>();
@@ -396,6 +396,13 @@ namespace ProcessManagement
             }
 
             return results;
+        }
+
+        public string GetIdentities()
+        {
+            string identities = $"Process_ID={this.Attr_Process_ID}";
+
+            return identities;
         }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)

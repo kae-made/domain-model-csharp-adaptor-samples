@@ -86,7 +86,7 @@ namespace ProcessManagement
 
             // Line : 2
             // Unrelate SELF From process Across R7
-            process.UnlinkR7CurrentStep(target, changedStates);;
+            process.UnlinkR7CurrentStep(target, changedStates);
 
             // Line : 3
             DomainClassPS nextStep = null;
@@ -101,7 +101,7 @@ namespace ProcessManagement
             {
                 // Line : 5
                 // nextStep - R7 -> process;
-                process.LinkR7CurrentStep(nextStep, changedStates);;
+                process.LinkR7CurrentStep(nextStep, changedStates);
 
             }
             else

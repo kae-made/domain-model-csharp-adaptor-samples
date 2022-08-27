@@ -27,14 +27,14 @@ namespace ProcessManagement
             //  6 : END IF;
 
             // Line : 1
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == ResourceName))).First());
+            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == ResourceName))).FirstOrDefault());
 
             // Line : 2
             if (resource != null)
             {
                 // Line : 3
                 // SELF - R8 -> resource;
-                target.LinkR8IsRequesting(resource, changedStates);;
+                target.LinkR8IsRequesting(resource, changedStates);
 
                 // Line : 4
                 var resourceAssigner = resource.LinkedR6();
@@ -87,7 +87,7 @@ namespace ProcessManagement
 
             // Line : 3
             // Unrelate process From processStep Across R3
-            process.UnlinkR3FirstStep(processStep, changedStates);;
+            process.UnlinkR3FirstStep(processStep, changedStates);
 
             // Line : 4
             while (processStep != null)
@@ -105,11 +105,11 @@ namespace ProcessManagement
 
                 // Line : 14
                 // Unrelate processSpec From orderSpec Across R4
-                processSpec.UnlinkR4(orderSpec, changedStates);;
+                processSpec.UnlinkR4(orderSpec, changedStates);
 
                 // Line : 15
                 // Unrelate process From processSpec Across R2
-                processSpec.UnlinkR2(process, changedStates);;
+                processSpec.UnlinkR2(process, changedStates);
 
                 // Line : 16
                 processStep.DeleteInstance(changedStates);

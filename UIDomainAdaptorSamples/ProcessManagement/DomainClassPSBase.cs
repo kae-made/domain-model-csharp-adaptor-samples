@@ -122,7 +122,7 @@ namespace ProcessManagement
             if (relR4OS == null)
             {
            var candidates = instanceRepository.GetDomainInstances("OS").Where(inst=>(this.Attr_Order_ID==((DomainClassOS)inst).Attr_Order_ID));
-           relR4OS = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R4", Phrase = "" };
+           relR4OS = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R4", Phrase = "" };
 
             }
             return relR4OS.GetDestination<DomainClassOS>();
@@ -168,7 +168,7 @@ namespace ProcessManagement
             if (relR2P == null)
             {
            var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Process_ID==((DomainClassP)inst).Attr_Process_ID));
-           relR2P = new LinkedInstance() { Source = this, Destination = candidates.First(), RelationshipID = "R2", Phrase = "" };
+           relR2P = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R2", Phrase = "" };
 
             }
             return relR2P.GetDestination<DomainClassP>();
@@ -212,25 +212,25 @@ namespace ProcessManagement
         public DomainClassIW LinkedR5OtherPredecessor()
         {
             var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_predecessorProcessSpec_ID && this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_successorProcessSpec_ID));
-            return (DomainClassIW)candidates.First();
+            return (DomainClassIW)candidates.FirstOrDefault();
         }
 
 
         public DomainClassIW LinkedR5OneSuccessor()
         {
             var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_predecessorProcessSpec_ID && this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_successorProcessSpec_ID));
-            return (DomainClassIW)candidates.First();
+            return (DomainClassIW)candidates.FirstOrDefault();
         }
 
         public DomainClassP LinkedR3()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassP)inst).Attr_firstProcessSpec_ID));
-            return (DomainClassP)candidates.First();
+            return (DomainClassP)candidates.FirstOrDefault();
         }
         public DomainClassP LinkedR7()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassP)inst).Attr_currentProcessSpec_ID));
-            return (DomainClassP)candidates.First();
+            return (DomainClassP)candidates.FirstOrDefault();
         }
 
 
@@ -319,6 +319,13 @@ namespace ProcessManagement
 
 
             return results;
+        }
+
+        public string GetIdentities()
+        {
+            string identities = $"ProcessSpec_ID={this.Attr_ProcessSpec_ID}";
+
+            return identities;
         }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)

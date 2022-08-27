@@ -1,0 +1,180 @@
+﻿<!--
+    Copyright (c) Knowledge & Experience. All rights reserved.
+    Licensed under the MIT license. See LICENSE file in the project root for full license information.
+-->
+<Window x:Class="Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer.WindowOfInstance"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer"
+        mc:Ignorable="d"
+        Title="WindowOfInstance" Height="600" Width="1600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock Name="tbClassName" FontSize="14"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Properties" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <ListBox Name="lbNameOfPropsOfInstance">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center"/>
+                                        <TextBlock Text=" : " VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Path=Value.Spec.DataType}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="25"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                        <ListBox Name="lbValueOfPropsOfInstances" Grid.Column="1">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Path=Value}" IsEnabled="{Binding Path=Spec.Writable}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="25"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
+                    <Button Name="buttonUpdateProperties" Content="Update" Grid.Row="2" Click="buttonUpdateProperties_Click"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                        <TextBlock Text="Result : " VerticalAlignment="Center" />
+                        <TextBlock Name="tbPropUpdateResult" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Column="1" BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition />
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Operations" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <ListBox Name="lbClassOperations" Grid.Row="1" SelectionChanged="lbClassOperations_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox Name="lbClassOperationParams" Grid.Row="2">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=Value.Name, Mode=TwoWay}" IsEnabled="{Binding Path=Value.Writable}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Path=Value.DataType}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Name="tbOpNoParams" Grid.Row="2" Text="no parameters" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Hidden"/>
+                    <Button Name="buttonInvokeClassOperation" Content="Invoke" Grid.Row="3" Click="buttonInvokeClassOperation_Click"/>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal">
+                        <TextBlock Text="Return : " VerticalAlignment="Center" />
+                        <TextBlock Name="tbOperationResult" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Column="2" BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition />
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Events" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <ListBox Name="lbClassEvetns" Grid.Row="1" SelectionChanged="lbClassEvetns_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox Name="lbEventParams" Grid.Row="2">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=Value.Name, Mode=TwoWay}" IsEnabled="{Binding Path=Value.Writable}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Path=Value.DataType}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Name="tbEvtNoParams" Grid.Row="2" Text="no parameters" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Hidden"/>
+                    <Button Name="buttonSendEvent" Content="Send" Grid.Row="3" Click="buttonSendEvent_Click"/>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal">
+                        <TextBlock Text="Result : " VerticalAlignment="Center" />
+                        <TextBlock Name="tbEvtSendResult" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Column="3" BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Relationships" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14"/>
+                    <ListBox Name="lbRelationships" Grid.Row="1" SelectionChanged="lbRelationships_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=Key}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox Name="lbLinkedInstances" Grid.Row="2" SelectionChanged="lbLinkedInstances_SelectionChanged">
+                    </ListBox>
+                    <TextBlock Name="tbLinkedInstanceState" Grid.Row="2" Text="empty" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Hidden"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

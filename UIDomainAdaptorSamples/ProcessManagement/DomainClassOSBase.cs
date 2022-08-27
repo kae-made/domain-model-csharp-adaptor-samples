@@ -135,6 +135,13 @@ namespace ProcessManagement
 
             return results;
         }
+
+        public string GetIdentities()
+        {
+            string identities = $"Order_ID={this.Attr_Order_ID}";
+
+            return identities;
+        }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)
         {

@@ -52,9 +52,25 @@ namespace ProcessManagement
         protected string attr_Name;
         protected bool stateof_Name = false;
 
+        protected string attr_TestString;
+        protected bool stateof_TestString = false;
+
+        protected int attr_TestInteger;
+        protected bool stateof_TestInteger = false;
+
+        protected double attr_TestReal;
+        protected bool stateof_TestReal = false;
+
+        protected bool attr_TestBoolean;
+        protected bool stateof_TestBoolean = false;
+
         public string Attr_RA_ID { get { return attr_RA_ID; } set { attr_RA_ID = value; stateof_RA_ID = true; } }
         public int Attr_current_state { get { return stateMachine.CurrentState; } }
         public string Attr_Name { get { return attr_Name; } set { attr_Name = value; stateof_Name = true; } }
+        public string Attr_TestString { get { return attr_TestString; } set { attr_TestString = value; stateof_TestString = true; } }
+        public int Attr_TestInteger { get { return attr_TestInteger; } set { attr_TestInteger = value; stateof_TestInteger = true; } }
+        public double Attr_TestReal { get { return attr_TestReal; } set { attr_TestReal = value; stateof_TestReal = true; } }
+        public bool Attr_TestBoolean { get { return attr_TestBoolean; } set { attr_TestBoolean = value; stateof_TestBoolean = true; } }
 
 
         // This method can be used as compare predicattion when calling InstanceRepository's SelectInstances method. 
@@ -73,6 +89,30 @@ namespace ProcessManagement
                         break;
                     case "Name":
                         if ((string)conditionPropertyValues[propertyName] != instance.Attr_Name)
+                        {
+                            result = false;
+                        }
+                        break;
+                    case "TestString":
+                        if ((string)conditionPropertyValues[propertyName] != instance.Attr_TestString)
+                        {
+                            result = false;
+                        }
+                        break;
+                    case "TestInteger":
+                        if ((int)conditionPropertyValues[propertyName] != instance.Attr_TestInteger)
+                        {
+                            result = false;
+                        }
+                        break;
+                    case "TestReal":
+                        if ((double)conditionPropertyValues[propertyName] != instance.Attr_TestReal)
+                        {
+                            result = false;
+                        }
+                        break;
+                    case "TestBoolean":
+                        if ((bool)conditionPropertyValues[propertyName] != instance.Attr_TestBoolean)
                         {
                             result = false;
                         }
@@ -136,6 +176,14 @@ namespace ProcessManagement
             stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
             attr_Name = (string)propertyValues["Name"];
             stateof_Name = false;
+            attr_TestString = (string)propertyValues["TestString"];
+            stateof_TestString = false;
+            attr_TestInteger = (int)propertyValues["TestInteger"];
+            stateof_TestInteger = false;
+            attr_TestReal = (double)propertyValues["TestReal"];
+            stateof_TestReal = false;
+            attr_TestBoolean = (bool)propertyValues["TestBoolean"];
+            stateof_TestBoolean = false;
         }
         
         public IDictionary<string, object> ChangedProperties()
@@ -153,8 +201,35 @@ namespace ProcessManagement
                 results.Add("Name", attr_Name);
                 stateof_Name = false;
             }
+            if (stateof_TestString)
+            {
+                results.Add("TestString", attr_TestString);
+                stateof_TestString = false;
+            }
+            if (stateof_TestInteger)
+            {
+                results.Add("TestInteger", attr_TestInteger);
+                stateof_TestInteger = false;
+            }
+            if (stateof_TestReal)
+            {
+                results.Add("TestReal", attr_TestReal);
+                stateof_TestReal = false;
+            }
+            if (stateof_TestBoolean)
+            {
+                results.Add("TestBoolean", attr_TestBoolean);
+                stateof_TestBoolean = false;
+            }
 
             return results;
+        }
+
+        public string GetIdentities()
+        {
+            string identities = $"RA_ID={this.Attr_RA_ID}";
+
+            return identities;
         }
         
         public IDictionary<string, object> GetProperties(bool onlyIdentity)
@@ -164,6 +239,10 @@ namespace ProcessManagement
             results.Add("RA_ID", attr_RA_ID);
             results.Add("current_state", stateMachine.CurrentState);
             results.Add("Name", attr_Name);
+            if (!onlyIdentity) results.Add("TestString", attr_TestString);
+            if (!onlyIdentity) results.Add("TestInteger", attr_TestInteger);
+            if (!onlyIdentity) results.Add("TestReal", attr_TestReal);
+            if (!onlyIdentity) results.Add("TestBoolean", attr_TestBoolean);
 
             return results;
         }
