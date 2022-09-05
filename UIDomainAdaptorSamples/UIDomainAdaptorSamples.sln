@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kae.DomainModel.CSharp.Util
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer", "WebAPIAppViewer\Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer.csproj", "{D33CE40B-E4B6-44B5-86A6-E99EE1277582}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupWPFApp", "SetupWPFApp\SetupWPFApp.vdproj", "{A4AC2E58-0955-49BC-A3E9-9C8BC6DD593D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,8 @@ Global
 		{D33CE40B-E4B6-44B5-86A6-E99EE1277582}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D33CE40B-E4B6-44B5-86A6-E99EE1277582}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D33CE40B-E4B6-44B5-86A6-E99EE1277582}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4AC2E58-0955-49BC-A3E9-9C8BC6DD593D}.Debug|Any CPU.ActiveCfg = Debug
+		{A4AC2E58-0955-49BC-A3E9-9C8BC6DD593D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
