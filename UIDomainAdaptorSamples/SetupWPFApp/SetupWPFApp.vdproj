@@ -31,13 +31,21 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\SetupWPFApp.msi"
+        "OutputFilename" = "8:Release\\WpfAppDomainModelViewer.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -47,6 +55,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -135,7 +159,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DomainModelViewer"
         "ProductCode" = "8:{922E0AEB-C081-4C46-A350-EAC253CEE7EF}"
-        "PackageCode" = "8:{0581C5EF-8942-4148-BAB7-6D6D30233656}"
+        "PackageCode" = "8:{2B13B4DC-A52A-45C9-B119-FF411EF70659}"
         "UpgradeCode" = "8:{7AABC236-6C69-497D-B86C-B04F693D12D7}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -656,7 +680,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_827022554AF94EBBB1912AD91B44C090"
             {
-            "SourcePath" = "8:..\\WpfAppViewer\\obj\\Release\\net5.0-windows\\apphost.exe"
+            "SourcePath" = "8:..\\WpfAppViewer\\obj\\Release\\net6.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_C846B32EA8524F25AFD7296C7D73042B"
