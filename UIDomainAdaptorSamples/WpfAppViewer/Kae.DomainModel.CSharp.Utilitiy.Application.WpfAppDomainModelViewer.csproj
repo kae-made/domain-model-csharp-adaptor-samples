@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kae.DomainModel.Csharp.Framework" Version="5.0.1" />
+    <PackageReference Include="Kae.DomainModel.Csharp.Framework" Version="5.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

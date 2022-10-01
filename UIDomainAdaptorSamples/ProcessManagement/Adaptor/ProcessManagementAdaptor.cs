@@ -70,6 +70,15 @@ namespace ProcessManagement.Adaptor
                 {
                     { "requestorId", new ParamSpec() {Name = "requestorId", TypeKind = ParamSpec.DataType.String, IsArray = false} }
                 }
+            },
+            {
+                "Verify1Initialize", new Dictionary<string, ParamSpec>()
+            },
+            {
+                "Verify2CreateRequester", new Dictionary<string, ParamSpec>()
+            },
+            {
+                "Verify3NotifyProcessStepDone", new Dictionary<string, ParamSpec>()
             }
         };
 
@@ -566,6 +575,15 @@ namespace ProcessManagement.Adaptor
                             break;
                         case "TestNotifyProcessStepDone":
                             domainModel.TestNotifyProcessStepDone(requestorId:(string)invSpec.Parameters["requestorId"]);
+                            break;
+                        case "Verify1Initialize":
+                            domainModel.Verify1Initialize();
+                            break;
+                        case "Verify2CreateRequester":
+                            domainModel.Verify2CreateRequester();
+                            break;
+                        case "Verify3NotifyProcessStepDone":
+                            domainModel.Verify3NotifyProcessStepDone();
                             break;
                     }
                 }

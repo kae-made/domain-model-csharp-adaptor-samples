@@ -220,8 +220,8 @@ namespace ProcessManagement
             //   5 : 		IF currentProcStep.Finished == FALSE
             //   6 : 			GENERATE PS2:Done TO currentProcStep;
             //   7 : 		ELSE
-            //   8 : 			SELECT ONE currentIWork RELATED BY currentProcStep->IntermediateWork[R5.'successor'];
-            //   9 : 			GENERATE IntermediateWork2:Done to currentIWork; 
+            //   8 : 			SELECT ONE currentIWork RELATED BY currentProcStep->IW[R5.'successor'];
+            //   9 : 			GENERATE IW2:Done to currentIWork; 
             //  10 : 		END IF;
             //  11 : 	END IF;
             //  12 : END IF;
@@ -256,6 +256,281 @@ namespace ProcessManagement
                     }
                     else
                     {
+                        // Line : 8
+                        var currentIWork = currentProcStep.LinkedR5OtherPredecessor();
+
+                        // Line : 9
+                        DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, sendNow:true);
+
+                    }
+
+                }
+
+            }
+
+
+            instanceRepository.SyncChangedStates(changedStates);
+        }
+        public void Verify1Initialize()
+        {
+            // TODO: Let's write action code!
+            // Action Description on Model as a reference.
+
+            //   1 : assingnerName = "Test";
+            //   2 : SELECT ANY resourceAssigner FROM INSTANCES OF RA WHERE SELECTED.Name == assingnerName;
+            //   3 : IF EMPTY resourceAssigner
+            //   4 : 	CREATE OBJECT INSTANCE resourceAssigner OF RA;
+            //   5 : 	resourceAssigner.Name = assingnerName;
+            //   6 : 
+            //   7 : 	CREATE OBJECT INSTANCE resource OF RES;
+            //   8 : 	resource.Name = "Res0Of" + assingnerName;
+            //   9 : 	RELATE resource TO resourceAssigner ACROSS R6;
+            //  10 : 
+            //  11 : 	CREATE OBJECT INSTANCE resource OF RES;
+            //  12 : 	resource.Name = "Res1Of" + assingnerName;
+            //  13 : 	RELATE resource TO resourceAssigner ACROSS R6;
+            //  14 : 
+            //  15 : 	CREATE OBJECT INSTANCE resource OF RES;
+            //  16 : 	resource.Name = "Res2Of" + assingnerName;
+            //  17 : 	RELATE resource TO resourceAssigner ACROSS R6;
+            //  18 : 
+            //  19 : END IF;
+            //  20 : 
+            //  21 : cmdName = "CmdA";
+            //  22 : SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+            //  23 : IF EMPTY orderSpec
+            //  24 : 	CREATE OBJECT INSTANCE orderSpec OF OS;
+            //  25 : 	orderSpec.Command = cmdName;
+            //  26 : END IF;
+            //  27 : 
+            //  28 : cmdName = "CmdB";
+            //  29 : SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+            //  30 : IF EMPTY orderSpec
+            //  31 : 	CREATE OBJECT INSTANCE orderSpec OF OS;
+            //  32 : 	orderSpec.Command = cmdName;
+            //  33 : END IF;
+            //  34 : 
+            //  35 : cmdName = "CmdC";
+            //  36 : SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+            //  37 : IF EMPTY orderSpec
+            //  38 : 	CREATE OBJECT INSTANCE orderSpec OF OS;
+            //  39 : 	orderSpec.Command = cmdName;
+            //  40 : END IF;
+            //  41 : 
+            //  42 : cmdName = "CmdD";
+            //  43 : SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == cmdName;
+            //  44 : IF EMPTY orderSpec
+            //  45 : 	CREATE OBJECT INSTANCE orderSpec OF OS;
+            //  46 : 	orderSpec.Command = cmdName;
+            //  47 : END IF;
+
+
+            var changedStates = new List<ChangedState>();
+            
+            // Generated from action description
+            // Line : 1
+            var assingnerName = "Test";
+            // Line : 2
+            var resourceAssigner = (DomainClassRA)(instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assingnerName))).FirstOrDefault());
+
+            // Line : 3
+            if (resourceAssigner == null)
+            {
+                // Line : 4
+                resourceAssigner = DomainClassRABase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 5
+                resourceAssigner.Attr_Name = assingnerName;
+                // Line : 7
+                var resource = DomainClassRESBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 8
+                resource.Attr_Name = ("Res0Of" + assingnerName);
+                // Line : 9
+                // resource - R6 -> resourceAssigner;
+                resource.LinkR6(resourceAssigner, changedStates);
+
+                // Line : 11
+                resource = DomainClassRESBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 12
+                resource.Attr_Name = ("Res1Of" + assingnerName);
+                // Line : 13
+                // resource - R6 -> resourceAssigner;
+                resource.LinkR6(resourceAssigner, changedStates);
+
+                // Line : 15
+                resource = DomainClassRESBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 16
+                resource.Attr_Name = ("Res2Of" + assingnerName);
+                // Line : 17
+                // resource - R6 -> resourceAssigner;
+                resource.LinkR6(resourceAssigner, changedStates);
+
+            }
+
+            // Line : 21
+            var cmdName = "CmdA";
+            // Line : 22
+            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+
+            // Line : 23
+            if (orderSpec == null)
+            {
+                // Line : 24
+                orderSpec = DomainClassOSBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 25
+                orderSpec.Attr_Command = cmdName;
+            }
+
+            // Line : 28
+            cmdName = "CmdB";
+            // Line : 29
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+
+            // Line : 30
+            if (orderSpec == null)
+            {
+                // Line : 31
+                orderSpec = DomainClassOSBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 32
+                orderSpec.Attr_Command = cmdName;
+            }
+
+            // Line : 35
+            cmdName = "CmdC";
+            // Line : 36
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+
+            // Line : 37
+            if (orderSpec == null)
+            {
+                // Line : 38
+                orderSpec = DomainClassOSBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 39
+                orderSpec.Attr_Command = cmdName;
+            }
+
+            // Line : 42
+            cmdName = "CmdD";
+            // Line : 43
+            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+
+            // Line : 44
+            if (orderSpec == null)
+            {
+                // Line : 45
+                orderSpec = DomainClassOSBase.CreateInstance(instanceRepository, logger, changedStates);
+                // Line : 46
+                orderSpec.Attr_Command = cmdName;
+            }
+
+
+            instanceRepository.SyncChangedStates(changedStates);
+        }
+        public void Verify2CreateRequester()
+        {
+            // TODO: Let's write action code!
+            // Action Description on Model as a reference.
+
+            //   1 : resourceName = "Res1OfTest";
+            //   2 : step1Cmd = "CmdC";
+            //   3 : step2Cmd = "CmdA";
+            //   4 : step3Cmd = "CmdD";
+            //   5 : SELECT ANY resource FROM INSTANCES OF RES WHERE SELECTED.Name == resourceName;
+            //   6 : SELECT ANY orderSpec1 FROM INSTANCES OF OS WHERE SELECTED.Command == step1Cmd;
+            //   7 : SELECT ANY orderSpec2 FROM INSTANCES OF OS WHERE SELECTED.Command == step2Cmd;
+            //   8 : SELECT ANY orderSpec3 FROM INSTANCES OF OS WHERE SELECTED.Command == step3Cmd;
+            //   9 : IF NOT_EMPTY resource AND NOT_EMPTY orderSpec1 AND NOT_EMPTY orderSpec2 AND NOT_EMPTY orderSpec3
+            //  10 : 	GENERATE REQ1:'Request Process'( ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd ) TO REQ CREATOR;
+            //  11 : END IF;
+
+
+            var changedStates = new List<ChangedState>();
+            
+            // Generated from action description
+            // Line : 1
+            var resourceName = "Res1OfTest";
+            // Line : 2
+            var step1Cmd = "CmdC";
+            // Line : 3
+            var step2Cmd = "CmdA";
+            // Line : 4
+            var step3Cmd = "CmdD";
+            // Line : 5
+            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName))).FirstOrDefault());
+
+            // Line : 6
+            var orderSpec1 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd))).FirstOrDefault());
+
+            // Line : 7
+            var orderSpec2 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd))).FirstOrDefault());
+
+            // Line : 8
+            var orderSpec3 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd))).FirstOrDefault());
+
+            // Line : 9
+            if ((((resource != null && orderSpec1 != null) && orderSpec2 != null) && orderSpec3 != null))
+            {
+                // Line : 10
+                DomainClassREQStateMachine.REQ1_RequestProcess.Create(receiver:null, ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd, sendNow:true, instanceRepository:instanceRepository, logger:logger);
+
+            }
+
+
+            instanceRepository.SyncChangedStates(changedStates);
+        }
+        public void Verify3NotifyProcessStepDone()
+        {
+            // TODO: Let's write action code!
+            // Action Description on Model as a reference.
+
+            //   1 : SELECT ANY requester FROM INSTANCES OF REQ;
+            //   2 : IF NOT_EMPTY requester
+            //   3 : 	SELECT ONE currentProcStep RELATED BY requester->P[R1]->PS[R7.'current step'];
+            //   4 : 	IF NOT_EMPTY currentProcStep
+            //   5 : 		IF currentProcStep.Finished == FALSE
+            //   6 : 			GENERATE PS2:Done TO currentProcStep;
+            //   7 : 		ELSE
+            //   8 : 			SELECT ONE currentIWork RELATED BY currentProcStep->IW[R5.'successor'];
+            //   9 : 			GENERATE IW2:Done to currentIWork; 
+            //  10 : 		END IF;
+            //  11 : 	END IF;
+            //  12 : END IF;
+
+
+            var changedStates = new List<ChangedState>();
+            
+            // Generated from action description
+            // Line : 1
+            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").FirstOrDefault());
+
+            // Line : 2
+            if (requester != null)
+            {
+                // Line : 3
+                DomainClassPS currentProcStep = null;
+                var requesterIn0RL0 = requester.LinkedR1OtherIsUserOf();
+                if (requesterIn0RL0 != null)
+                {
+                    currentProcStep = requesterIn0RL0.LinkedR7CurrentStep();
+                }
+
+                // Line : 4
+                if (currentProcStep != null)
+                {
+                    // Line : 5
+                    if ((currentProcStep.Attr_Finished == false))
+                    {
+                        // Line : 6
+                        DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, sendNow:true);
+
+                    }
+                    else
+                    {
+                        // Line : 8
+                        var currentIWork = currentProcStep.LinkedR5OtherPredecessor();
+
+                        // Line : 9
+                        DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, sendNow:true);
+
                     }
 
                 }

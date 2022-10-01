@@ -51,64 +51,14 @@ namespace ProcessManagement
             //   1 : SELECT MANY resourceSet RELATED BY SELF->RES[R6];
             //   2 : FOR EACH resource IN resourceSet
             //   3 : 	SELECT ONE usingRequester RELATED BY resource->REQ[R1.'is used by'];
-            //   4 : 	IF EMPTY resource
-            //   5 : 		SELECT ANY requester RELATED BY resource->REQ[R8];
-            //   6 : 		IF NOT_EMPTY requester
-            //   7 : 			GENERATE RA2:'Resource Freed' TO SELF;
-            //   8 : 		END IF;
-            //   9 : 	END IF;
-            //  10 : END FOR;
-
-            // Line : 1
-            var resourceSet = target.LinkedR6() as List<DomainClassRES>;
-
-            // Line : 2
-            foreach (var resource in resourceSet)
-            {
-                // Line : 3
-                DomainClassREQ usingRequester = null;
-                var resourceIn0RL1 = resource.LinkedR1OneIsUsedBy();
-                if (resourceIn0RL1 != null)
-                {
-                    usingRequester = resourceIn0RL1.LinkedR1OneIsUsedBy();
-                }
-
-                // Line : 4
-                if (resource == null)
-                {
-                    // Line : 5
-                    var requester = resource.LinkedR8().FirstOrDefault();
-
-                    // Line : 6
-                    if (requester != null)
-                    {
-                        // Line : 7
-                        DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:target, sendNow:true);
-
-                    }
-
-                }
-
-            }
-
-
-        }
-
-        protected void ActionResourcAssigned()
-        {
-            // Action Description on Model as a reference.
-
-            //   1 : SELECT MANY resourceSet RELATED BY SELF->RES[R6];
-            //   2 : FOR EACH resource IN resourceSet
-            //   3 : 	SELECT ONE usingRequester RELATED BY resource->REQ[R1.'is used by'];
             //   4 : 	IF EMPTY usingRequester
             //   5 : 		SELECT ANY requester RELATED BY resource->REQ[R8];
             //   6 : 		IF NOT_EMPTY requester
-            //   7 : 			GENERATE P1:'Start Process'( Requester_ID:requester.Requester_ID, Resource_ID:resource.Resource_ID) TO P CREATOR;
-            //   8 : 		END IF;
-            //   9 : 	END IF;
-            //  10 : END FOR;
-            //  11 : GENERATE RA3:Assigned TO SELF;
+            //   7 : 			GENERATE RA2:'Resource Freed' TO SELF;
+            //   8 : 			BREAK;
+            //   9 : 		END IF;
+            //  10 : 	END IF;
+            //  11 : END FOR;
 
             // Line : 1
             var resourceSet = target.LinkedR6() as List<DomainClassRES>;
@@ -134,6 +84,64 @@ namespace ProcessManagement
                     if (requester != null)
                     {
                         // Line : 7
+                        DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:target, sendNow:true);
+
+                        // Line : 8
+                        break;
+                    }
+
+                }
+
+            }
+
+
+        }
+
+        protected void ActionResourcAssigned()
+        {
+            // Action Description on Model as a reference.
+
+            //   1 : SELECT MANY resourceSet RELATED BY SELF->RES[R6];
+            //   2 : FOR EACH resource IN resourceSet
+            //   3 : 	SELECT ONE usingRequester RELATED BY resource->REQ[R1.'is used by'];
+            //   4 : 	IF EMPTY usingRequester
+            //   5 : 		SELECT ANY requester RELATED BY resource->REQ[R8];
+            //   6 : 		IF NOT_EMPTY requester
+            //   7 : 			UNRELATE resource FROM requester ACROSS R8;
+            //   8 : 			GENERATE P1:'Start Process'( Requester_ID:requester.Requester_ID, Resource_ID:resource.Resource_ID) TO P CREATOR;
+            //   9 : 		END IF;
+            //  10 : 	END IF;
+            //  11 : END FOR;
+            //  12 : GENERATE RA3:Assigned TO SELF;
+
+            // Line : 1
+            var resourceSet = target.LinkedR6() as List<DomainClassRES>;
+
+            // Line : 2
+            foreach (var resource in resourceSet)
+            {
+                // Line : 3
+                DomainClassREQ usingRequester = null;
+                var resourceIn0RL1 = resource.LinkedR1OneIsUsedBy();
+                if (resourceIn0RL1 != null)
+                {
+                    usingRequester = resourceIn0RL1.LinkedR1OneIsUsedBy();
+                }
+
+                // Line : 4
+                if (usingRequester == null)
+                {
+                    // Line : 5
+                    var requester = resource.LinkedR8().FirstOrDefault();
+
+                    // Line : 6
+                    if (requester != null)
+                    {
+                        // Line : 7
+                        // Unrelate resource From requester Across R8
+                        requester.UnlinkR8IsRequesting(resource, changedStates);
+
+                        // Line : 8
                         DomainClassPStateMachine.P1_StartProcess.Create(receiver:null, Requester_ID:requester.Attr_Requester_ID, Resource_ID:resource.Attr_Resource_ID, sendNow:true, instanceRepository:instanceRepository, logger:logger);
 
                     }
@@ -142,7 +150,7 @@ namespace ProcessManagement
 
             }
 
-            // Line : 11
+            // Line : 12
             DomainClassRAStateMachine.RA3_Assigned.Create(receiver:target, sendNow:true);
 
 

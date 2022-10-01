@@ -37,7 +37,7 @@ namespace ProcessManagement
             //  16 : processStep2.Finished = FALSE;
             //  17 : RELATE processStep2 TO orderSpec ACROSS R4;
             //  18 : RELATE SELF TO processStep2 ACROSS R2;
-            //  19 : CREATE OBJECT INSTANCE iWork12 of IntermediateWork;
+            //  19 : CREATE OBJECT INSTANCE iWork12 of IW;
             //  20 : RELATE processStep1 TO processStep2 ACROSS R5.'successor' USING iWork12;
             //  21 : 
             //  22 : SELECT ANY orderSpec FROM INSTANCES OF OS WHERE SELECTED.Command == requester.Step3Command;
@@ -46,11 +46,13 @@ namespace ProcessManagement
             //  25 : processStep3.Finished = FALSE;
             //  26 : RELATE processStep3 TO orderSpec ACROSS R4;
             //  27 : RELATE SELF TO processStep3 ACROSS R2;
-            //  28 : CREATE OBJECT INSTANCE iWork23 of IntermediateWork;
+            //  28 : CREATE OBJECT INSTANCE iWork23 of IW;
             //  29 : RELATE processStep2 TO processStep3 ACROSS R5.'successor' USING iWork23;
             //  30 : 
             //  31 : RELATE SELF TO processStep1 ACROSS R7;
             //  32 : GENERATE P2:'Proceed Process Step' TO SELF;
+            //  33 : 
+            //  34 : GENERATE REQ2:Assigned TO requester;
 
             // Line : 1
             var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == Requester_ID))).FirstOrDefault());
@@ -100,6 +102,12 @@ namespace ProcessManagement
             // SELF - R2 -> processStep2;
             processStep2.LinkR2(target, changedStates);
 
+            // Line : 19
+            var iWork12 = DomainClassIWBase.CreateInstance(instanceRepository, logger, changedStates);
+            // Line : 20
+            // Relate processStep1 - R5 -> processStep2 USING iWork12
+            iWork12.LinkR5(processStep2,processStep1);
+
             // Line : 22
             orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == ((DomainClassREQ)requester).Attr_Step3Command))).FirstOrDefault());
 
@@ -117,12 +125,21 @@ namespace ProcessManagement
             // SELF - R2 -> processStep3;
             processStep3.LinkR2(target, changedStates);
 
+            // Line : 28
+            var iWork23 = DomainClassIWBase.CreateInstance(instanceRepository, logger, changedStates);
+            // Line : 29
+            // Relate processStep2 - R5 -> processStep3 USING iWork23
+            iWork23.LinkR5(processStep3,processStep2);
+
             // Line : 31
             // SELF - R7 -> processStep1;
             target.LinkR7CurrentStep(processStep1, changedStates);
 
             // Line : 32
             DomainClassPStateMachine.P2_ProceedProcessStep.Create(receiver:target, sendNow:true);
+
+            // Line : 34
+            DomainClassREQStateMachine.REQ2_Assigned.Create(receiver:requester, sendNow:true);
 
 
         }
