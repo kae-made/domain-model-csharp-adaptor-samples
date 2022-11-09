@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -27,20 +28,29 @@ namespace ProcessManagement
             //  6 : END IF;
 
             // Line : 1
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == ResourceName))).FirstOrDefault());
+            var resourceTempSet = instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == ResourceName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) resourceTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "RES", resourceTempSet, () => { return $"(Name = ResourceName)"; }, () => { return DomainClassRESBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var resource = (DomainClassRES)(resourceTempSet.FirstOrDefault());
 
             // Line : 2
             if (resource != null)
             {
                 // Line : 3
                 // SELF - R8 -> resource;
-                target.LinkR8IsRequesting(resource, changedStates);
+                target.LinkR8(resource, changedStates);
 
                 // Line : 4
                 var resourceAssigner = resource.LinkedR6();
 
                 // Line : 5
-                DomainClassRAStateMachine.RA1_RequestResource.Create(receiver:resourceAssigner, sendNow:true);
+                if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                {
+                    changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = resourceAssigner, Event = DomainClassRAStateMachine.RA1_RequestResource.Create(receiver:resourceAssigner, false, sendNow:false) });
+                }
+                else
+                {
+                    DomainClassRAStateMachine.RA1_RequestResource.Create(receiver:resourceAssigner, isSelfEvent:false, sendNow:true);
+                }
 
             }
 

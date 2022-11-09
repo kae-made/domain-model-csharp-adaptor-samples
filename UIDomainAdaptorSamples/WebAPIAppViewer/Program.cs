@@ -31,5 +31,6 @@ app.MapHub<DomainModelStateHub>("stateHub");
 
 DomainModelController.DomainModelAdaptorDllPath = builder.Configuration.GetSection("DomainModelAdaptor").GetSection("Dll").Value;
 DomainModelController.HubUrl = builder.Configuration.GetSection("SignalR").GetSection("Url").Value;
+DomainModelController.AppConfig = builder.Configuration;
 
 app.Run();

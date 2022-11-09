@@ -46,18 +46,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static IW1_Start Create(DomainClassIW receiver, bool sendNow)
+            public static IW1_Start Create(DomainClassIW receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new IW1_Start(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -75,18 +90,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static IW2_Done Create(DomainClassIW receiver, bool sendNow)
+            public static IW2_Done Create(DomainClassIW receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new IW2_Done(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -94,7 +124,10 @@ namespace ProcessManagement
 
         protected InstanceRepository instanceRepository;
 
-        public DomainClassIWStateMachine(DomainClassIW target, InstanceRepository instanceRepository, Logger logger) : base(1, logger)
+        protected string DomainName { get { return target.DomainName; } }
+
+        // Constructor
+        public DomainClassIWStateMachine(DomainClassIW target, bool synchronousMode, InstanceRepository instanceRepository, Logger logger) : base(1, synchronousMode, logger)
         {
             this.target = target;
             this.stateTransition = this;

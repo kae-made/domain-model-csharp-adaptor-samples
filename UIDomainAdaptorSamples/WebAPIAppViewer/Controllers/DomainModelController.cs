@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Knowledge & Experience. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using Azure.Identity;
 using Kae.DomainModel.Csharp.Framework;
 using Kae.DomainModel.Csharp.Framework.Adaptor;
 using Microsoft.AspNetCore.Mvc;
@@ -108,6 +109,29 @@ namespace Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer.
                                 domainModelAdaptor = methodOfGetAdaptor.Invoke(null, new object[] { _logger }) as DomainModelAdaptor;
                                 if (domainModelAdaptor != null)
                                 {
+                                    var configForDomainModel = new Dictionary<string, IDictionary<string, object>>();
+                                    var domainModelConfigKeys = domainModelAdaptor.ConfigurationKeys();
+                                    foreach (var eeKey in domainModelConfigKeys.Keys)
+                                    {
+                                        configForDomainModel.Add(eeKey, new Dictionary<string, object>());
+                                        if (eeKey == "AzureDigitalTwins")
+                                        {
+                                            string adtInstanceUriKey = "ADTInstanceUri";
+                                            configForDomainModel[eeKey].Add(adtInstanceUriKey, AppConfig.GetConnectionString(adtInstanceUriKey));
+                                            string adtCredentialKey = "ADTCredential";
+                                            configForDomainModel[eeKey].Add(adtCredentialKey, new DefaultAzureCredential());
+                                        }
+                                        else
+                                        {
+                                            foreach (var ckey in domainModelConfigKeys[eeKey])
+                                            {
+                                                configForDomainModel[eeKey].Add(ckey, AppConfig.GetConnectionString(ckey));
+                                            }
+                                        }
+                                    }
+                                    domainModelAdaptor.Initialize(configForDomainModel);
+
+
                                     domainModelAdaptor.RegisterUpdateHandler(classPropretiesUpdated, relationshipUpdated);
                                 }
                             }
@@ -119,6 +143,8 @@ namespace Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer.
         }
 
         public static string HubUrl { get; set; }
+
+        public static ConfigurationManager AppConfig { get; set; }
         protected static HubConnection? GetHubConnection()
         {
             HubConnection hubConnection = null;

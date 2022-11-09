@@ -10,8 +10,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Text;
 using System.Reflection;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -74,7 +77,9 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var resourceAssigner = (DomainClassRA)(instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assignerName))).FirstOrDefault());
+            var resourceAssignerTempSet = instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assignerName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) resourceAssignerTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "RA", resourceAssignerTempSet, () => { return $"(Name = assignerName)"; }, () => { return DomainClassRABase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var resourceAssigner = (DomainClassRA)(resourceAssignerTempSet.FirstOrDefault());
 
             // Line : 2
             if (resourceAssigner == null)
@@ -112,7 +117,9 @@ namespace ProcessManagement
             // Line : 20
             var cmdName = "CmdA";
             // Line : 21
-            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            var orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 22
             if (orderSpec == null)
@@ -126,7 +133,9 @@ namespace ProcessManagement
             // Line : 27
             cmdName = "CmdB";
             // Line : 28
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 29
             if (orderSpec == null)
@@ -140,7 +149,9 @@ namespace ProcessManagement
             // Line : 34
             cmdName = "CmdC";
             // Line : 35
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 36
             if (orderSpec == null)
@@ -154,7 +165,9 @@ namespace ProcessManagement
             // Line : 41
             cmdName = "CmdD";
             // Line : 42
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 43
             if (orderSpec == null)
@@ -186,22 +199,30 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName))).FirstOrDefault());
+            var resourceTempSet = instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) resourceTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "RES", resourceTempSet, () => { return $"(Name = resourceName)"; }, () => { return DomainClassRESBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var resource = (DomainClassRES)(resourceTempSet.FirstOrDefault());
 
             // Line : 2
-            var orderSpec1 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd))).FirstOrDefault());
+            var orderSpec1TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec1TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec1TempSet, () => { return $"(Command = step1Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec1 = (DomainClassOS)(orderSpec1TempSet.FirstOrDefault());
 
             // Line : 3
-            var orderSpec2 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd))).FirstOrDefault());
+            var orderSpec2TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec2TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec2TempSet, () => { return $"(Command = step2Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec2 = (DomainClassOS)(orderSpec2TempSet.FirstOrDefault());
 
             // Line : 4
-            var orderSpec3 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd))).FirstOrDefault());
+            var orderSpec3TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec3TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec3TempSet, () => { return $"(Command = step3Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec3 = (DomainClassOS)(orderSpec3TempSet.FirstOrDefault());
 
             // Line : 5
             if ((((resource != null && orderSpec1 != null) && orderSpec2 != null) && orderSpec3 != null))
             {
                 // Line : 6
-                DomainClassREQStateMachine.REQ1_RequestProcess.Create(receiver:null, ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd, sendNow:true, instanceRepository:instanceRepository, logger:logger);
+                DomainClassREQStateMachine.REQ1_RequestProcess.Create(receiver:null, ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd, isSelfEvent:false, sendNow:true, instanceRepository:instanceRepository, logger:logger);
 
             }
 
@@ -231,7 +252,9 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == requestorId))).FirstOrDefault());
+            var requesterTempSet = instanceRepository.GetDomainInstances("REQ").Where(selected => ((((DomainClassREQ)selected).Attr_Requester_ID == requestorId)));
+            if (instanceRepository.ExternalStorageAdaptor != null) requesterTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "REQ", requesterTempSet, () => { return $"(Requester_ID = requestorId)"; }, () => { return DomainClassREQBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var requester = (DomainClassREQ)(requesterTempSet.FirstOrDefault());
 
             // Line : 2
             if (requester != null)
@@ -251,7 +274,14 @@ namespace ProcessManagement
                     if ((currentProcStep.Attr_Finished == false))
                     {
                         // Line : 6
-                        DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, sendNow:true);
+                        if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                        {
+                            changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = currentProcStep, Event = DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, false, sendNow:false) });
+                        }
+                        else
+                        {
+                            DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, isSelfEvent:false, sendNow:true);
+                        }
 
                     }
                     else
@@ -260,7 +290,14 @@ namespace ProcessManagement
                         var currentIWork = currentProcStep.LinkedR5OtherPredecessor();
 
                         // Line : 9
-                        DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, sendNow:true);
+                        if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                        {
+                            changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = currentIWork, Event = DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, false, sendNow:false) });
+                        }
+                        else
+                        {
+                            DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, isSelfEvent:false, sendNow:true);
+                        }
 
                     }
 
@@ -331,7 +368,9 @@ namespace ProcessManagement
             // Line : 1
             var assingnerName = "Test";
             // Line : 2
-            var resourceAssigner = (DomainClassRA)(instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assingnerName))).FirstOrDefault());
+            var resourceAssignerTempSet = instanceRepository.GetDomainInstances("RA").Where(selected => ((((DomainClassRA)selected).Attr_Name == assingnerName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) resourceAssignerTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "RA", resourceAssignerTempSet, () => { return $"(Name = assingnerName)"; }, () => { return DomainClassRABase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var resourceAssigner = (DomainClassRA)(resourceAssignerTempSet.FirstOrDefault());
 
             // Line : 3
             if (resourceAssigner == null)
@@ -369,7 +408,9 @@ namespace ProcessManagement
             // Line : 21
             var cmdName = "CmdA";
             // Line : 22
-            var orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            var orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 23
             if (orderSpec == null)
@@ -383,7 +424,9 @@ namespace ProcessManagement
             // Line : 28
             cmdName = "CmdB";
             // Line : 29
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 30
             if (orderSpec == null)
@@ -397,7 +440,9 @@ namespace ProcessManagement
             // Line : 35
             cmdName = "CmdC";
             // Line : 36
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 37
             if (orderSpec == null)
@@ -411,7 +456,9 @@ namespace ProcessManagement
             // Line : 42
             cmdName = "CmdD";
             // Line : 43
-            orderSpec = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName))).FirstOrDefault());
+            orderSpecTempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == cmdName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpecTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpecTempSet, () => { return $"(Command = cmdName)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            orderSpec = (DomainClassOS)(orderSpecTempSet.FirstOrDefault());
 
             // Line : 44
             if (orderSpec == null)
@@ -455,22 +502,30 @@ namespace ProcessManagement
             // Line : 4
             var step3Cmd = "CmdD";
             // Line : 5
-            var resource = (DomainClassRES)(instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName))).FirstOrDefault());
+            var resourceTempSet = instanceRepository.GetDomainInstances("RES").Where(selected => ((((DomainClassRES)selected).Attr_Name == resourceName)));
+            if (instanceRepository.ExternalStorageAdaptor != null) resourceTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "RES", resourceTempSet, () => { return $"(Name = resourceName)"; }, () => { return DomainClassRESBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var resource = (DomainClassRES)(resourceTempSet.FirstOrDefault());
 
             // Line : 6
-            var orderSpec1 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd))).FirstOrDefault());
+            var orderSpec1TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step1Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec1TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec1TempSet, () => { return $"(Command = step1Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec1 = (DomainClassOS)(orderSpec1TempSet.FirstOrDefault());
 
             // Line : 7
-            var orderSpec2 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd))).FirstOrDefault());
+            var orderSpec2TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step2Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec2TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec2TempSet, () => { return $"(Command = step2Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec2 = (DomainClassOS)(orderSpec2TempSet.FirstOrDefault());
 
             // Line : 8
-            var orderSpec3 = (DomainClassOS)(instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd))).FirstOrDefault());
+            var orderSpec3TempSet = instanceRepository.GetDomainInstances("OS").Where(selected => ((((DomainClassOS)selected).Attr_Command == step3Cmd)));
+            if (instanceRepository.ExternalStorageAdaptor != null) orderSpec3TempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "OS", orderSpec3TempSet, () => { return $"(Command = step3Cmd)"; }, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var orderSpec3 = (DomainClassOS)(orderSpec3TempSet.FirstOrDefault());
 
             // Line : 9
             if ((((resource != null && orderSpec1 != null) && orderSpec2 != null) && orderSpec3 != null))
             {
                 // Line : 10
-                DomainClassREQStateMachine.REQ1_RequestProcess.Create(receiver:null, ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd, sendNow:true, instanceRepository:instanceRepository, logger:logger);
+                DomainClassREQStateMachine.REQ1_RequestProcess.Create(receiver:null, ResourceName:resourceName, Step1Command:step1Cmd, Step2Command:step2Cmd, Step3Command:step3Cmd, isSelfEvent:false, sendNow:true, instanceRepository:instanceRepository, logger:logger);
 
             }
 
@@ -500,7 +555,9 @@ namespace ProcessManagement
             
             // Generated from action description
             // Line : 1
-            var requester = (DomainClassREQ)(instanceRepository.GetDomainInstances("REQ").FirstOrDefault());
+            var requesterTempSet = instanceRepository.GetDomainInstances("REQ");
+            if (instanceRepository.ExternalStorageAdaptor != null) requesterTempSet = instanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(DomainName, "REQ", requesterTempSet, () => { return ""; }, () => { return DomainClassREQBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+            var requester = (DomainClassREQ)(requesterTempSet.FirstOrDefault());
 
             // Line : 2
             if (requester != null)
@@ -520,7 +577,14 @@ namespace ProcessManagement
                     if ((currentProcStep.Attr_Finished == false))
                     {
                         // Line : 6
-                        DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, sendNow:true);
+                        if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                        {
+                            changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = currentProcStep, Event = DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, false, sendNow:false) });
+                        }
+                        else
+                        {
+                            DomainClassPSStateMachine.PS2_Done.Create(receiver:currentProcStep, isSelfEvent:false, sendNow:true);
+                        }
 
                     }
                     else
@@ -529,7 +593,14 @@ namespace ProcessManagement
                         var currentIWork = currentProcStep.LinkedR5OtherPredecessor();
 
                         // Line : 9
-                        DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, sendNow:true);
+                        if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                        {
+                            changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = currentIWork, Event = DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, false, sendNow:false) });
+                        }
+                        else
+                        {
+                            DomainClassIWStateMachine.IW2_Done.Create(receiver:currentIWork, isSelfEvent:false, sendNow:true);
+                        }
 
                     }
 
@@ -539,6 +610,15 @@ namespace ProcessManagement
 
 
             instanceRepository.SyncChangedStates(changedStates);
+        }
+
+        public IList<string> CreateExternalEntities()
+        {
+            var configuration = new List<string>();
+            return configuration;
+        }
+        public void Initialize(IDictionary<string, IDictionary<string, object>> configuration)
+        {
         }
     }
 }

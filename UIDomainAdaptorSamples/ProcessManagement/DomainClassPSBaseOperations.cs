@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -22,12 +23,6 @@ namespace ProcessManagement
 
             var changedStates = new List<ChangedState>();
             // Generated from action description
-            // code before by coloring of bind-to-command
-            // before code to send command...
-
-
-            // code after by coloring of bind-to-command
-            // before code to send command...
 
         
             instanceRepository.SyncChangedStates(changedStates);

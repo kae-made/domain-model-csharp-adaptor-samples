@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassREQBase : DomainClassREQ
     {
         protected static readonly string className = "REQ";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassREQBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"Requester_ID={attr_Requester_ID}"; }
+
+        public static DomainClassREQBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassREQBase(instanceRepository, logger);
+            var newInstance = new DomainClassREQBase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:REQ(Requester_ID={newInstance.Attr_Requester_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,12 +42,12 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassREQBase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassREQBase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
             attr_Requester_ID = Guid.NewGuid().ToString();
-            stateMachine = new DomainClassREQStateMachine(this, instanceRepository, logger);
+            stateMachine = new DomainClassREQStateMachine(this, synchronousMode, instanceRepository, logger);
         }
         protected string attr_Requester_ID;
         protected bool stateof_Requester_ID = false;
@@ -58,15 +64,15 @@ namespace ProcessManagement
         protected string attr_Step3Command;
         protected bool stateof_Step3Command = false;
 
-        protected string attr_RequestingResource_ID;
-        protected bool stateof_RequestingResource_ID = false;
+        protected string attr_Resource_ID;
+        protected bool stateof_Resource_ID = false;
 
         public string Attr_Requester_ID { get { return attr_Requester_ID; } set { attr_Requester_ID = value; stateof_Requester_ID = true; } }
         public int Attr_current_state { get { return stateMachine.CurrentState; } }
         public string Attr_Step1Command { get { return attr_Step1Command; } set { attr_Step1Command = value; stateof_Step1Command = true; } }
         public string Attr_Step2Command { get { return attr_Step2Command; } set { attr_Step2Command = value; stateof_Step2Command = true; } }
         public string Attr_Step3Command { get { return attr_Step3Command; } set { attr_Step3Command = value; stateof_Step3Command = true; } }
-        public string Attr_RequestingResource_ID { get { return attr_RequestingResource_ID; } }
+        public string Attr_Resource_ID { get { return attr_Resource_ID; } }
 
 
         // This method can be used as compare predicattion when calling InstanceRepository's SelectInstances method. 
@@ -101,8 +107,8 @@ namespace ProcessManagement
                             result = false;
                         }
                         break;
-                    case "RequestingResource_ID":
-                        if ((string)conditionPropertyValues[propertyName] != instance.Attr_RequestingResource_ID)
+                    case "Resource_ID":
+                        if ((string)conditionPropertyValues[propertyName] != instance.Attr_Resource_ID)
                         {
                             result = false;
                         }
@@ -115,45 +121,51 @@ namespace ProcessManagement
             }
             return result;
         }
-        protected LinkedInstance relR8RESIsRequesting;
-        public DomainClassRES LinkedR8IsRequesting()
+        protected LinkedInstance relR8RES;
+        public DomainClassRES LinkedR8()
         {
-            if (relR8RESIsRequesting == null)
+            if (relR8RES == null)
             {
-           var candidates = instanceRepository.GetDomainInstances("RES").Where(inst=>(this.Attr_RequestingResource_ID==((DomainClassRES)inst).Attr_Resource_ID));
-           relR8RESIsRequesting = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R8", Phrase = "IsRequesting" };
+                var candidates = instanceRepository.GetDomainInstances("RES").Where(inst=>(this.Attr_Resource_ID==((DomainClassRES)inst).Attr_Resource_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "RES", "R8", candidates, () => { return DomainClassRESBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
+                relR8RES = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R8", Phrase = "" };
 
             }
-            return relR8RESIsRequesting.GetDestination<DomainClassRES>();
+            return relR8RES.GetDestination<DomainClassRES>();
         }
 
-        public bool LinkR8IsRequesting(DomainClassRES instance, IList<ChangedState> changedStates=null)
+        public bool LinkR8(DomainClassRES instance, IList<ChangedState> changedStates=null)
         {
             bool result = false;
-            if (relR8RESIsRequesting == null)
+            if (relR8RES == null)
             {
-                this.attr_RequestingResource_ID = instance.Attr_Resource_ID;
+                this.attr_Resource_ID = instance.Attr_Resource_ID;
+                this.stateof_Resource_ID = true;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:REQ(Requester_ID={this.Attr_Requester_ID}):link[RES(Resource_ID={instance.Attr_Resource_ID})]");
 
-                result = (LinkedR8IsRequesting()!=null);
+                result = (LinkedR8()!=null);
                 if (result)
                 {
-                    if(changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Create, Target = relR8RESIsRequesting });
+                    if(changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Create, Target = relR8RES });
                 }
             }
             return result;
         }
 
-        public bool UnlinkR8IsRequesting(DomainClassRES instance, IList<ChangedState> changedStates=null)
+        public bool UnlinkR8(DomainClassRES instance, IList<ChangedState> changedStates=null)
         {
             bool result = false;
-            if (relR8RESIsRequesting != null && ( this.Attr_RequestingResource_ID==instance.Attr_Resource_ID ))
+            if (relR8RES != null && ( this.Attr_Resource_ID==instance.Attr_Resource_ID ))
             {
-                if (changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Delete, Target = relR8RESIsRequesting });
+                if (changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Delete, Target = relR8RES });
         
-                this.attr_RequestingResource_ID = null;
-                relR8RESIsRequesting = null;
+                this.attr_Resource_ID = null;
+                this.stateof_Resource_ID = true;
+                relR8RES = null;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:REQ(Requester_ID={this.Attr_Requester_ID}):unlink[RES(Resource_ID={instance.Attr_Resource_ID})]");
 
@@ -165,6 +177,11 @@ namespace ProcessManagement
         public DomainClassP LinkedR1OtherIsUserOf()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Requester_ID==((DomainClassP)inst).Attr_Requester_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "P", "R1_IsUserOf", candidates, () => { return DomainClassPBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassP)candidates.FirstOrDefault()).LinkedR1OneIsUsedBy();
+            }
             return (DomainClassP)candidates.FirstOrDefault();
         }
 
@@ -202,17 +219,36 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_Requester_ID = (string)propertyValues["Requester_ID"];
+            if (propertyValues.ContainsKey("Requester_ID"))
+            {
+                attr_Requester_ID = (string)propertyValues["Requester_ID"];
+            }
             stateof_Requester_ID = false;
-            stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
-            attr_Step1Command = (string)propertyValues["Step1Command"];
+            if (propertyValues.ContainsKey("current_state"))
+            {
+                stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            }
+            stateof_current_state = false;
+            if (propertyValues.ContainsKey("Step1Command"))
+            {
+                attr_Step1Command = (string)propertyValues["Step1Command"];
+            }
             stateof_Step1Command = false;
-            attr_Step2Command = (string)propertyValues["Step2Command"];
+            if (propertyValues.ContainsKey("Step2Command"))
+            {
+                attr_Step2Command = (string)propertyValues["Step2Command"];
+            }
             stateof_Step2Command = false;
-            attr_Step3Command = (string)propertyValues["Step3Command"];
+            if (propertyValues.ContainsKey("Step3Command"))
+            {
+                attr_Step3Command = (string)propertyValues["Step3Command"];
+            }
             stateof_Step3Command = false;
-            attr_RequestingResource_ID = (string)propertyValues["RequestingResource_ID"];
-            stateof_RequestingResource_ID = false;
+            if (propertyValues.ContainsKey("Resource_ID"))
+            {
+                attr_Resource_ID = (string)propertyValues["Resource_ID"];
+            }
+            stateof_Resource_ID = false;
         }
         
         public IDictionary<string, object> ChangedProperties()
@@ -240,10 +276,10 @@ namespace ProcessManagement
                 results.Add("Step3Command", attr_Step3Command);
                 stateof_Step3Command = false;
             }
-            if (stateof_RequestingResource_ID)
+            if (stateof_Resource_ID)
             {
-                results.Add("RequestingResource_ID", attr_RequestingResource_ID);
-                stateof_RequestingResource_ID = false;
+                results.Add("Resource_ID", attr_Resource_ID);
+                stateof_Resource_ID = false;
             }
 
             return results;
@@ -265,7 +301,7 @@ namespace ProcessManagement
             if (!onlyIdentity) results.Add("Step1Command", attr_Step1Command);
             if (!onlyIdentity) results.Add("Step2Command", attr_Step2Command);
             if (!onlyIdentity) results.Add("Step3Command", attr_Step3Command);
-            if (!onlyIdentity) results.Add("RequestingResource_ID", attr_RequestingResource_ID);
+            if (!onlyIdentity) results.Add("Resource_ID", attr_Resource_ID);
 
             return results;
         }

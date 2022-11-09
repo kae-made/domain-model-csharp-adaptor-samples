@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassRESBase : DomainClassRES
     {
         protected static readonly string className = "RES";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassRESBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"Resource_ID={attr_Resource_ID}"; }
+
+        public static DomainClassRESBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassRESBase(instanceRepository, logger);
+            var newInstance = new DomainClassRESBase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:RES(Resource_ID={newInstance.Attr_Resource_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,12 +42,12 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassRESBase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassRESBase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
             attr_Resource_ID = Guid.NewGuid().ToString();
-            stateMachine = new DomainClassRESStateMachine(this, instanceRepository, logger);
+            stateMachine = new DomainClassRESStateMachine(this, synchronousMode, instanceRepository, logger);
         }
         protected string attr_Resource_ID;
         protected bool stateof_Resource_ID = false;
@@ -100,8 +106,12 @@ namespace ProcessManagement
         {
             if (relR6RA == null)
             {
-           var candidates = instanceRepository.GetDomainInstances("RA").Where(inst=>(this.Attr_RA_ID==((DomainClassRA)inst).Attr_RA_ID));
-           relR6RA = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R6", Phrase = "" };
+                var candidates = instanceRepository.GetDomainInstances("RA").Where(inst=>(this.Attr_RA_ID==((DomainClassRA)inst).Attr_RA_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "RA", "R6", candidates, () => { return DomainClassRABase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
+                relR6RA = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R6", Phrase = "" };
 
             }
             return relR6RA.GetDestination<DomainClassRA>();
@@ -113,6 +123,7 @@ namespace ProcessManagement
             if (relR6RA == null)
             {
                 this.attr_RA_ID = instance.Attr_RA_ID;
+                this.stateof_RA_ID = true;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:RES(Resource_ID={this.Attr_Resource_ID}):link[RA(RA_ID={instance.Attr_RA_ID})]");
 
@@ -133,6 +144,7 @@ namespace ProcessManagement
                 if (changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Delete, Target = relR6RA });
         
                 this.attr_RA_ID = null;
+                this.stateof_RA_ID = true;
                 relR6RA = null;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:RES(Resource_ID={this.Attr_Resource_ID}):unlink[RA(RA_ID={instance.Attr_RA_ID})]");
@@ -146,6 +158,11 @@ namespace ProcessManagement
         public DomainClassP LinkedR1OneIsUsedBy()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Resource_ID==((DomainClassP)inst).Attr_Resource_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "P", "R1_IsUsedBy", candidates, () => { return DomainClassPBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassP)candidates.FirstOrDefault()).LinkedR1OtherIsUserOf();
+            }
             return (DomainClassP)candidates.FirstOrDefault();
         }
 
@@ -153,9 +170,11 @@ namespace ProcessManagement
         public IEnumerable<DomainClassREQ> LinkedR8()
         {
             var result = new List<DomainClassREQ>();
-            var candidates = instanceRepository.GetDomainInstances("REQ").Where(inst=>(this.Attr_Resource_ID==((DomainClassREQ)inst).Attr_RequestingResource_ID));
+            var candidates = instanceRepository.GetDomainInstances("REQ").Where(inst=>(this.Attr_Resource_ID==((DomainClassREQ)inst).Attr_Resource_ID));
+            if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "REQ", "R8", candidates, () => { return DomainClassREQBase.CreateInstance(instanceRepository, logger); }, "many").Result;
             foreach (var c in candidates)
             {
+                ((DomainClassREQ)c).LinkedR8();
                 result.Add((DomainClassREQ)c);
             }
             return result;
@@ -199,12 +218,25 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_Resource_ID = (string)propertyValues["Resource_ID"];
+            if (propertyValues.ContainsKey("Resource_ID"))
+            {
+                attr_Resource_ID = (string)propertyValues["Resource_ID"];
+            }
             stateof_Resource_ID = false;
-            stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
-            attr_Name = (string)propertyValues["Name"];
+            if (propertyValues.ContainsKey("current_state"))
+            {
+                stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            }
+            stateof_current_state = false;
+            if (propertyValues.ContainsKey("Name"))
+            {
+                attr_Name = (string)propertyValues["Name"];
+            }
             stateof_Name = false;
-            attr_RA_ID = (string)propertyValues["RA_ID"];
+            if (propertyValues.ContainsKey("RA_ID"))
+            {
+                attr_RA_ID = (string)propertyValues["RA_ID"];
+            }
             stateof_RA_ID = false;
         }
         

@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassIWBase : DomainClassIW
     {
         protected static readonly string className = "IW";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassIWBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"predecessorProcessSpec_ID={attr_predecessorProcessSpec_ID};successorProcessSpec_ID={attr_successorProcessSpec_ID}"; }
+
+        public static DomainClassIWBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassIWBase(instanceRepository, logger);
+            var newInstance = new DomainClassIWBase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:IW(predecessorProcessSpec_ID={newInstance.Attr_predecessorProcessSpec_ID},successorProcessSpec_ID={newInstance.Attr_successorProcessSpec_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,11 +42,11 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassIWBase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassIWBase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
-            stateMachine = new DomainClassIWStateMachine(this, instanceRepository, logger);
+            stateMachine = new DomainClassIWStateMachine(this, synchronousMode, instanceRepository, logger);
         }
         protected string attr_predecessorProcessSpec_ID;
         protected bool stateof_predecessorProcessSpec_ID = false;
@@ -94,7 +100,9 @@ namespace ProcessManagement
             if (relR5PSSuccessor == null && relR5PSPredecessor == null)
             {
                 this.attr_predecessorProcessSpec_ID = oneInstanceSuccessor.Attr_ProcessSpec_ID;
+                this.stateof_predecessorProcessSpec_ID = true;
                 this.attr_successorProcessSpec_ID = otherInstancePredecessor.Attr_ProcessSpec_ID;
+                this.stateof_successorProcessSpec_ID = true;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:IW(predecessorProcessSpec_ID={this.Attr_predecessorProcessSpec_ID},successorProcessSpec_ID={this.Attr_successorProcessSpec_ID}):link[One(PS(ProcessSpec_ID={oneInstanceSuccessor.Attr_ProcessSpec_ID})),Other(PS(ProcessSpec_ID={otherInstancePredecessor.Attr_ProcessSpec_ID}))]");
 
@@ -116,7 +124,7 @@ namespace ProcessManagement
             bool result = false;
             if (relR5PSSuccessor != null && relR5PSPredecessor != null)
             {
-                if ((this.Attr_predecessorProcessSpec_ID==oneInstanceSuccessor.Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==oneInstanceSuccessor.Attr_ProcessSpec_ID) && (this.Attr_predecessorProcessSpec_ID==otherInstancePredecessor.Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==otherInstancePredecessor.Attr_ProcessSpec_ID))
+                if ((this.Attr_predecessorProcessSpec_ID==oneInstanceSuccessor.Attr_ProcessSpec_ID) && (this.Attr_successorProcessSpec_ID==otherInstancePredecessor.Attr_ProcessSpec_ID))
                 {
                     if (changedStates != null)
                     {
@@ -125,7 +133,9 @@ namespace ProcessManagement
                     }
         
                     this.attr_predecessorProcessSpec_ID = null;
+                    this.stateof_predecessorProcessSpec_ID = true;
                     this.attr_successorProcessSpec_ID = null;
+                    this.stateof_successorProcessSpec_ID = true;
                     relR5PSSuccessor = null;
                     relR5PSPredecessor = null;
 
@@ -141,7 +151,11 @@ namespace ProcessManagement
         {
             if (relR5PSSuccessor == null)
             {
-                var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_predecessorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
+                var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_predecessorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "PS", "R5_Successor", candidates, () => { return DomainClassPSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
                 relR5PSSuccessor = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R5", Phrase = "Successor" };
                 // (DomainClassPS)candidates.FirstOrDefault();
             }
@@ -152,7 +166,11 @@ namespace ProcessManagement
         {
             if (relR5PSPredecessor == null)
             {
-                var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_predecessorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID && this.Attr_successorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
+                var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_successorProcessSpec_ID==((DomainClassPS)inst).Attr_ProcessSpec_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "PS", "R5_Predecessor", candidates, () => { return DomainClassPSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
                 relR5PSPredecessor = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R5", Phrase = "Predecessor" };
                 // (DomainClassPS)candidates.FirstOrDefault();
             }
@@ -201,11 +219,21 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_predecessorProcessSpec_ID = (string)propertyValues["predecessorProcessSpec_ID"];
+            if (propertyValues.ContainsKey("predecessorProcessSpec_ID"))
+            {
+                attr_predecessorProcessSpec_ID = (string)propertyValues["predecessorProcessSpec_ID"];
+            }
             stateof_predecessorProcessSpec_ID = false;
-            attr_successorProcessSpec_ID = (string)propertyValues["successorProcessSpec_ID"];
+            if (propertyValues.ContainsKey("successorProcessSpec_ID"))
+            {
+                attr_successorProcessSpec_ID = (string)propertyValues["successorProcessSpec_ID"];
+            }
             stateof_successorProcessSpec_ID = false;
-            stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            if (propertyValues.ContainsKey("current_state"))
+            {
+                stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            }
+            stateof_current_state = false;
         }
         
         public IDictionary<string, object> ChangedProperties()

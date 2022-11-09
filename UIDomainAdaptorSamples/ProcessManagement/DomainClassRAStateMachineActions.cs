@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -37,7 +38,7 @@ namespace ProcessManagement
             if (requester != null)
             {
                 // Line : 3
-                DomainClassRAStateMachine.RA1_RequestResource.Create(receiver:target, sendNow:true);
+                DomainClassRAStateMachine.RA1_RequestResource.Create(receiver:target, isSelfEvent:true, sendNow:true);
 
             }
 
@@ -84,7 +85,7 @@ namespace ProcessManagement
                     if (requester != null)
                     {
                         // Line : 7
-                        DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:target, sendNow:true);
+                        DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:target, isSelfEvent:true, sendNow:true);
 
                         // Line : 8
                         break;
@@ -139,10 +140,10 @@ namespace ProcessManagement
                     {
                         // Line : 7
                         // Unrelate resource From requester Across R8
-                        requester.UnlinkR8IsRequesting(resource, changedStates);
+                        requester.UnlinkR8(resource, changedStates);
 
                         // Line : 8
-                        DomainClassPStateMachine.P1_StartProcess.Create(receiver:null, Requester_ID:requester.Attr_Requester_ID, Resource_ID:resource.Attr_Resource_ID, sendNow:true, instanceRepository:instanceRepository, logger:logger);
+                        DomainClassPStateMachine.P1_StartProcess.Create(receiver:null, Requester_ID:requester.Attr_Requester_ID, Resource_ID:resource.Attr_Resource_ID, isSelfEvent:false, sendNow:true, instanceRepository:instanceRepository, logger:logger);
 
                     }
 
@@ -151,7 +152,7 @@ namespace ProcessManagement
             }
 
             // Line : 12
-            DomainClassRAStateMachine.RA3_Assigned.Create(receiver:target, sendNow:true);
+            DomainClassRAStateMachine.RA3_Assigned.Create(receiver:target, isSelfEvent:true, sendNow:true);
 
 
         }

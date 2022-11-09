@@ -47,18 +47,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static RA1_RequestResource Create(DomainClassRA receiver, bool sendNow)
+            public static RA1_RequestResource Create(DomainClassRA receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new RA1_RequestResource(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -76,18 +91,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static RA2_ResourceFreed Create(DomainClassRA receiver, bool sendNow)
+            public static RA2_ResourceFreed Create(DomainClassRA receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new RA2_ResourceFreed(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -105,18 +135,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static RA3_Assigned Create(DomainClassRA receiver, bool sendNow)
+            public static RA3_Assigned Create(DomainClassRA receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new RA3_Assigned(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -124,7 +169,10 @@ namespace ProcessManagement
 
         protected InstanceRepository instanceRepository;
 
-        public DomainClassRAStateMachine(DomainClassRA target, InstanceRepository instanceRepository, Logger logger) : base(1, logger)
+        protected string DomainName { get { return target.DomainName; } }
+
+        // Constructor
+        public DomainClassRAStateMachine(DomainClassRA target, bool synchronousMode, InstanceRepository instanceRepository, Logger logger) : base(1, synchronousMode, logger)
         {
             this.target = target;
             this.stateTransition = this;
@@ -136,7 +184,7 @@ namespace ProcessManagement
             {
                 { (int)States.WaitingForResource, (int)ITransition.Transition.CantHappen, (int)ITransition.Transition.CantHappen }, 
                 { (int)ITransition.Transition.CantHappen, (int)States.ResourcAssigned, (int)ITransition.Transition.CantHappen }, 
-                { (int)ITransition.Transition.CantHappen, (int)States.WaitingForResource, (int)States.WaitingForRequest }
+                { (int)ITransition.Transition.CantHappen, (int)ITransition.Transition.CantHappen, (int)States.WaitingForRequest }
             };
 
         public int GetNextState(int currentState, int eventNumber)

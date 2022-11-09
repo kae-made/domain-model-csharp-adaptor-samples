@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -26,7 +27,14 @@ namespace ProcessManagement
             var resourceAssigner = target.LinkedR6();
 
             // Line : 2
-            DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:resourceAssigner, sendNow:true);
+            if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+            {
+                changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = resourceAssigner, Event = DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:resourceAssigner, false, sendNow:false) });
+            }
+            else
+            {
+                DomainClassRAStateMachine.RA2_ResourceFreed.Create(receiver:resourceAssigner, isSelfEvent:false, sendNow:true);
+            }
 
 
         }

@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassOSBase : DomainClassOS
     {
         protected static readonly string className = "OS";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassOSBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"Order_ID={attr_Order_ID}"; }
+
+        public static DomainClassOSBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassOSBase(instanceRepository, logger);
+            var newInstance = new DomainClassOSBase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:OS(Order_ID={newInstance.Attr_Order_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,7 +42,7 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassOSBase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassOSBase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
@@ -85,8 +91,10 @@ namespace ProcessManagement
         {
             var result = new List<DomainClassPS>();
             var candidates = instanceRepository.GetDomainInstances("PS").Where(inst=>(this.Attr_Order_ID==((DomainClassPS)inst).Attr_Order_ID));
+            if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "PS", "R4", candidates, () => { return DomainClassPSBase.CreateInstance(instanceRepository, logger); }, "many").Result;
             foreach (var c in candidates)
             {
+                ((DomainClassPS)c).LinkedR4();
                 result.Add((DomainClassPS)c);
             }
             return result;
@@ -113,9 +121,15 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_Order_ID = (string)propertyValues["Order_ID"];
+            if (propertyValues.ContainsKey("Order_ID"))
+            {
+                attr_Order_ID = (string)propertyValues["Order_ID"];
+            }
             stateof_Order_ID = false;
-            attr_Command = (string)propertyValues["Command"];
+            if (propertyValues.ContainsKey("Command"))
+            {
+                attr_Command = (string)propertyValues["Command"];
+            }
             stateof_Command = false;
         }
         

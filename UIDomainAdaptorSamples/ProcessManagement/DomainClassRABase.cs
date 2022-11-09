@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassRABase : DomainClassRA
     {
         protected static readonly string className = "RA";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassRABase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"RA_ID={attr_RA_ID}"; }
+
+        public static DomainClassRABase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassRABase(instanceRepository, logger);
+            var newInstance = new DomainClassRABase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:RA(RA_ID={newInstance.Attr_RA_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,12 +42,12 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassRABase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassRABase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
             attr_RA_ID = Guid.NewGuid().ToString();
-            stateMachine = new DomainClassRAStateMachine(this, instanceRepository, logger);
+            stateMachine = new DomainClassRAStateMachine(this, synchronousMode, instanceRepository, logger);
         }
         protected string attr_RA_ID;
         protected bool stateof_RA_ID = false;
@@ -130,8 +136,10 @@ namespace ProcessManagement
         {
             var result = new List<DomainClassRES>();
             var candidates = instanceRepository.GetDomainInstances("RES").Where(inst=>(this.Attr_RA_ID==((DomainClassRES)inst).Attr_RA_ID));
+            if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "RES", "R6", candidates, () => { return DomainClassRESBase.CreateInstance(instanceRepository, logger); }, "many").Result;
             foreach (var c in candidates)
             {
+                ((DomainClassRES)c).LinkedR6();
                 result.Add((DomainClassRES)c);
             }
             return result;
@@ -171,18 +179,40 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_RA_ID = (string)propertyValues["RA_ID"];
+            if (propertyValues.ContainsKey("RA_ID"))
+            {
+                attr_RA_ID = (string)propertyValues["RA_ID"];
+            }
             stateof_RA_ID = false;
-            stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
-            attr_Name = (string)propertyValues["Name"];
+            if (propertyValues.ContainsKey("current_state"))
+            {
+                stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            }
+            stateof_current_state = false;
+            if (propertyValues.ContainsKey("Name"))
+            {
+                attr_Name = (string)propertyValues["Name"];
+            }
             stateof_Name = false;
-            attr_TestString = (string)propertyValues["TestString"];
+            if (propertyValues.ContainsKey("TestString"))
+            {
+                attr_TestString = (string)propertyValues["TestString"];
+            }
             stateof_TestString = false;
-            attr_TestInteger = (int)propertyValues["TestInteger"];
+            if (propertyValues.ContainsKey("TestInteger"))
+            {
+                attr_TestInteger = (int)propertyValues["TestInteger"];
+            }
             stateof_TestInteger = false;
-            attr_TestReal = (double)propertyValues["TestReal"];
+            if (propertyValues.ContainsKey("TestReal"))
+            {
+                attr_TestReal = (double)propertyValues["TestReal"];
+            }
             stateof_TestReal = false;
-            attr_TestBoolean = (bool)propertyValues["TestBoolean"];
+            if (propertyValues.ContainsKey("TestBoolean"))
+            {
+                attr_TestBoolean = (bool)propertyValues["TestBoolean"];
+            }
             stateof_TestBoolean = false;
         }
         

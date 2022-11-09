@@ -58,7 +58,7 @@ namespace ProcessManagement
             public string Step1Command { get; set; }
             public string Step2Command { get; set; }
             public string Step3Command { get; set; }
-            public static REQ1_RequestProcess Create(DomainClassREQ receiver, string ResourceName, string Step1Command, string Step2Command, string Step3Command, bool sendNow, InstanceRepository instanceRepository, Logger logger)
+            public static REQ1_RequestProcess Create(DomainClassREQ receiver, string ResourceName, string Step1Command, string Step2Command, string Step3Command, bool isSelfEvent, bool sendNow, InstanceRepository instanceRepository, Logger logger)
             {
                 var newEvent = new REQ1_RequestProcess(receiver) { ResourceName = ResourceName, Step1Command = Step1Command, Step2Command = Step2Command, Step3Command = Step3Command };
                 if (receiver == null && instanceRepository != null)
@@ -71,6 +71,18 @@ namespace ProcessManagement
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+                supplementalData.Add("ResourceName", ResourceName);
+                supplementalData.Add("Step1Command", Step1Command);
+                supplementalData.Add("Step2Command", Step2Command);
+                supplementalData.Add("Step3Command", Step3Command);
+
+                return supplementalData;
             }
         }
 
@@ -88,18 +100,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static REQ2_Assigned Create(DomainClassREQ receiver, bool sendNow)
+            public static REQ2_Assigned Create(DomainClassREQ receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new REQ2_Assigned(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -117,18 +144,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static REQ3_Done Create(DomainClassREQ receiver, bool sendNow)
+            public static REQ3_Done Create(DomainClassREQ receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new REQ3_Done(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -136,7 +178,10 @@ namespace ProcessManagement
 
         protected InstanceRepository instanceRepository;
 
-        public DomainClassREQStateMachine(DomainClassREQ target, InstanceRepository instanceRepository, Logger logger) : base(0, logger)
+        protected string DomainName { get { return target.DomainName; } }
+
+        // Constructor
+        public DomainClassREQStateMachine(DomainClassREQ target, bool synchronousMode, InstanceRepository instanceRepository, Logger logger) : base(0, synchronousMode, logger)
         {
             this.target = target;
             this.stateTransition = this;

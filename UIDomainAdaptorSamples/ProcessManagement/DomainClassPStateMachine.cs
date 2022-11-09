@@ -54,7 +54,7 @@ namespace ProcessManagement
 
             public string Requester_ID { get; set; }
             public string Resource_ID { get; set; }
-            public static P1_StartProcess Create(DomainClassP receiver, string Requester_ID, string Resource_ID, bool sendNow, InstanceRepository instanceRepository, Logger logger)
+            public static P1_StartProcess Create(DomainClassP receiver, string Requester_ID, string Resource_ID, bool isSelfEvent, bool sendNow, InstanceRepository instanceRepository, Logger logger)
             {
                 var newEvent = new P1_StartProcess(receiver) { Requester_ID = Requester_ID, Resource_ID = Resource_ID };
                 if (receiver == null && instanceRepository != null)
@@ -67,6 +67,16 @@ namespace ProcessManagement
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+                supplementalData.Add("Requester_ID", Requester_ID);
+                supplementalData.Add("Resource_ID", Resource_ID);
+
+                return supplementalData;
             }
         }
 
@@ -84,18 +94,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static P2_ProceedProcessStep Create(DomainClassP receiver, bool sendNow)
+            public static P2_ProceedProcessStep Create(DomainClassP receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new P2_ProceedProcessStep(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -113,18 +138,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static P3_DoneAllSteps Create(DomainClassP receiver, bool sendNow)
+            public static P3_DoneAllSteps Create(DomainClassP receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new P3_DoneAllSteps(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -132,7 +172,10 @@ namespace ProcessManagement
 
         protected InstanceRepository instanceRepository;
 
-        public DomainClassPStateMachine(DomainClassP target, InstanceRepository instanceRepository, Logger logger) : base(0, logger)
+        protected string DomainName { get { return target.DomainName; } }
+
+        // Constructor
+        public DomainClassPStateMachine(DomainClassP target, bool synchronousMode, InstanceRepository instanceRepository, Logger logger) : base(0, synchronousMode, logger)
         {
             this.target = target;
             this.stateTransition = this;

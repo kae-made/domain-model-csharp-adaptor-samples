@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -53,7 +54,14 @@ namespace ProcessManagement
             var procStep = target.LinkedR5OtherPredecessor();
 
             // Line : 2
-            DomainClassPSStateMachine.PS3_Prepared.Create(receiver:procStep, sendNow:true);
+            if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+            {
+                changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = procStep, Event = DomainClassPSStateMachine.PS3_Prepared.Create(receiver:procStep, false, sendNow:false) });
+            }
+            else
+            {
+                DomainClassPSStateMachine.PS3_Prepared.Create(receiver:procStep, isSelfEvent:false, sendNow:true);
+            }
 
 
         }

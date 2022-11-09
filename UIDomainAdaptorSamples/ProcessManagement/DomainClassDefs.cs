@@ -15,6 +15,35 @@ using Kae.DomainModel.Csharp.Framework;
 namespace ProcessManagement
 {
 
+    public interface DomainClassIW : DomainClassDef
+    {
+        // Conceptual Information Class's Properties
+
+        string Attr_predecessorProcessSpec_ID { get; }
+        string Attr_successorProcessSpec_ID { get; }
+        int Attr_current_state { get; }
+
+
+        // State Machine
+
+        void TakeEvent(EventData domainEvent, bool selfEvent=false);
+
+        // Relationships 
+
+        public bool LinkR5(DomainClassPS oneInstanceSuccessor, DomainClassPS otherInstancePredecessor, IList<ChangedState> changedStates=null);
+        public bool UnlinkR5(DomainClassPS oneInstanceSuccessor, DomainClassPS otherInstancePredecessor, IList<ChangedState> changedStates=null);
+        public DomainClassPS LinkedR5OneSuccessor();
+        public DomainClassPS LinkedR5OtherPredecessor();
+
+
+        // Conceptual Information Class's Operations
+
+        public void ExecuteCommand(string prevCommand, string nextCommand);
+
+
+
+    }
+
     public interface DomainClassPS : DomainClassDef
     {
         // Conceptual Information Class's Properties
@@ -129,7 +158,7 @@ namespace ProcessManagement
         string Attr_Step1Command { get; set; }
         string Attr_Step2Command { get; set; }
         string Attr_Step3Command { get; set; }
-        string Attr_RequestingResource_ID { get; }
+        string Attr_Resource_ID { get; }
 
 
         // State Machine
@@ -138,11 +167,11 @@ namespace ProcessManagement
 
         // Relationships 
 
-        public DomainClassRES LinkedR8IsRequesting();
+        public DomainClassRES LinkedR8();
 
-        public bool LinkR8IsRequesting(DomainClassRES instance, IList<ChangedState> changedStates=null);
+        public bool LinkR8(DomainClassRES instance, IList<ChangedState> changedStates=null);
 
-        public bool UnlinkR8IsRequesting(DomainClassRES instance, IList<ChangedState> changedStates=null);
+        public bool UnlinkR8(DomainClassRES instance, IList<ChangedState> changedStates=null);
         public DomainClassP LinkedR1OtherIsUserOf();
 
 
@@ -211,35 +240,6 @@ namespace ProcessManagement
 
 
         // Conceptual Information Class's Operations
-
-
-
-    }
-
-    public interface DomainClassIW : DomainClassDef
-    {
-        // Conceptual Information Class's Properties
-
-        string Attr_predecessorProcessSpec_ID { get; }
-        string Attr_successorProcessSpec_ID { get; }
-        int Attr_current_state { get; }
-
-
-        // State Machine
-
-        void TakeEvent(EventData domainEvent, bool selfEvent=false);
-
-        // Relationships 
-
-        public bool LinkR5(DomainClassPS oneInstanceSuccessor, DomainClassPS otherInstancePredecessor, IList<ChangedState> changedStates=null);
-        public bool UnlinkR5(DomainClassPS oneInstanceSuccessor, DomainClassPS otherInstancePredecessor, IList<ChangedState> changedStates=null);
-        public DomainClassPS LinkedR5OneSuccessor();
-        public DomainClassPS LinkedR5OtherPredecessor();
-
-
-        // Conceptual Information Class's Operations
-
-        public void ExecuteCommand(string prevCommand, string nextCommand);
 
 
 

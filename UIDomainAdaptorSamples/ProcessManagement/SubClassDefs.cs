@@ -9,6 +9,8 @@
 // ------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Kae.DomainModel.Csharp.Framework;
+using Kae.Utility.Logging;
 
 namespace ProcessManagement
 {

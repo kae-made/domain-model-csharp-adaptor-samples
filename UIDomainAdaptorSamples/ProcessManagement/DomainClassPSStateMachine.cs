@@ -48,18 +48,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static PS1_Start Create(DomainClassPS receiver, bool sendNow)
+            public static PS1_Start Create(DomainClassPS receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new PS1_Start(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -77,18 +92,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static PS2_Done Create(DomainClassPS receiver, bool sendNow)
+            public static PS2_Done Create(DomainClassPS receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new PS2_Done(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -106,18 +136,33 @@ namespace ProcessManagement
                 reciever.TakeEvent(this);
             }
 
-            public static PS3_Prepared Create(DomainClassPS receiver, bool sendNow)
+            public static PS3_Prepared Create(DomainClassPS receiver, bool isSelfEvent, bool sendNow)
             {
                 var newEvent = new PS3_Prepared(receiver);
                 if (receiver != null)
                 {
                     if (sendNow)
                     {
-                        receiver.TakeEvent(newEvent);
+                        receiver.TakeEvent(newEvent, isSelfEvent);
+                    }
+                }
+                else
+                {
+                    if (sendNow)
+                    {
+                        newEvent = null;
                     }
                 }
 
                 return newEvent;
+            }
+
+            public override IDictionary<string, object> GetSupplementalData()
+            {
+                var supplementalData = new Dictionary<string, object>();
+
+
+                return supplementalData;
             }
         }
 
@@ -125,7 +170,10 @@ namespace ProcessManagement
 
         protected InstanceRepository instanceRepository;
 
-        public DomainClassPSStateMachine(DomainClassPS target, InstanceRepository instanceRepository, Logger logger) : base(1, logger)
+        protected string DomainName { get { return target.DomainName; } }
+
+        // Constructor
+        public DomainClassPSStateMachine(DomainClassPS target, bool synchronousMode, InstanceRepository instanceRepository, Logger logger) : base(1, synchronousMode, logger)
         {
             this.target = target;
             this.stateTransition = this;

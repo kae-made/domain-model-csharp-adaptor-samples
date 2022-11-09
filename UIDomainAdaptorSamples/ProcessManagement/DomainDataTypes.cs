@@ -12,4 +12,51 @@ using System.Collections.Generic;
 
 namespace ProcessManagement
 {
+
+    public static class DataTypeConverter
+    {
+        public static double ConvertToDouble(object value)
+        {
+            if (value is Int16)
+            {
+                return (double)((Int16)value);
+            }
+            else if (value is Int32)
+            {
+                return (double)((Int32)value);
+            }
+            else if (value is Int64)
+            {
+                return (double)((Int64)value);
+            }
+            else if (value is UInt16)
+            {
+                return (double)(UInt16)value;
+            }
+            else if (value is UInt32)
+            {
+                return (double)((UInt32)value);
+            }
+            else if (value is UInt64)
+            {
+                return (double)((UInt64)value);
+            }
+            else if (value is Decimal)
+            {
+                return (double)((Decimal)value);
+            }
+            else if (value is Single)
+            {
+                return (double)((Single)value);
+            }
+            else if (value is String)
+            {
+                return double.Parse((string)value);
+            }
+            else
+            {
+                return (double)value;
+            }
+        }
+    }
 }

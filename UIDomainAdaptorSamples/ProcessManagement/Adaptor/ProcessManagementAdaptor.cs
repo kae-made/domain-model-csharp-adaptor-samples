@@ -19,7 +19,8 @@ namespace ProcessManagement.Adaptor
     // Entry for Application front end.
     public static class DomainModelAdaptorEntry
     {
-        public static DomainModelAdaptor GetAdaptor(Logger logger) { return ProcessManagementAdaptor.GetInstance(logger); }
+        public static IDictionary<string, object> Configuration { get; } = new Dictionary<string, object>();
+        public static DomainModelAdaptor GetAdaptor(Logger logger) { foreach (var k in Configuration.Keys) { ProcessManagementAdaptor.Configuration.Add(k, Configuration[k]); } return ProcessManagementAdaptor.GetInstance(logger); }
     }
 
     public class ProcessManagementAdaptor : DomainModelAdaptor
@@ -28,17 +29,46 @@ namespace ProcessManagement.Adaptor
 
         public static DomainModelAdaptor adapterInstance = null;
 
+        public static IDictionary<string, object> Configuration { get; } = new Dictionary<string, object>();
+
         public static DomainModelAdaptor GetInstance(Logger logger)
         {
             if (adapterInstance == null)
             {
                 var instanceRepository = new InstanceRepositoryInMemory(logger);
+
                 var cimLib = new CIMProcessManagementLib(instanceRepository);
                 adapterInstance = new ProcessManagementAdaptor(cimLib, logger);
             }
             return adapterInstance;
         }
 
+        public override IDictionary<string, IList<string>> ConfigurationKeys()
+        {
+            var configurationKeys = new Dictionary<string, IList<string>>();
+
+            var externalEntities = domainModel.InstanceRepository.GetExternalEntities();
+            foreach(var externalEntity in externalEntities)
+            {
+                configurationKeys.Add(externalEntity.EEKey, new List<string>());
+                foreach(var cKey in externalEntity.ConfigurationKeys)
+                {
+                    configurationKeys[externalEntity.EEKey].Add(cKey);
+                }
+            }
+
+            return configurationKeys;
+        }
+
+        public override void Initialize(IDictionary<string, IDictionary<string, object>> config)
+        {
+            var externalEntities = domainModel.InstanceRepository.GetExternalEntities();
+            foreach(var externalEntity in externalEntities)
+            {
+                externalEntity.Initialize(config[externalEntity.EEKey]);
+            }
+
+        }
 
         public ProcessManagementAdaptor(CIMProcessManagementLib domainModel, Logger logger) : base(logger)
         {
@@ -84,6 +114,67 @@ namespace ProcessManagement.Adaptor
 
         protected Dictionary<string, ClassSpec> _classSpecs = new Dictionary<string, ClassSpec>()
         {
+            {
+                "IW", new ClassSpec()
+                {                
+                    Name = "Intermediate Work",
+                    KeyLetter = "IW",
+                    Properties = new Dictionary<string, PropSpec>()
+                    {
+                        {
+                            "predecessorProcessSpec_ID", new PropSpec()
+                            { Name = "predecessorProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        },
+                        {
+                            "successorProcessSpec_ID", new PropSpec()
+                            { Name = "successorProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                        },
+                        {
+                            "current_state", new PropSpec()
+                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
+                        }
+                    },
+                    Operations = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "ExecuteCommand", new OperationSpec()
+                            {
+                                Name = "ExecuteCommand", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                                {
+                                    { "prevCommand", new ParamSpec() {Name = "prevCommand", TypeKind = ParamSpec.DataType.String, IsArray = false} },
+                                    { "nextCommand", new ParamSpec() {Name = "nextCommand", TypeKind = ParamSpec.DataType.String, IsArray = false} }
+                                }
+                            }
+                        }
+                    },
+                    Links = new Dictionary<string, LinkSpec>()
+                    {
+                        {
+                            "PS[R5.'successor']", new LinkSpec()
+                            { Name = "PS[R5.'successor']", RelID = "R5", Phrase = "successor", Set = false, Condition = false, DstKeyLett = "PS" }
+                        },
+                        {
+                            "PS[R5.'predecessor']", new LinkSpec()
+                            { Name = "PS[R5.'predecessor']", RelID = "R5", Phrase = "predecessor", Set = false, Condition = false, DstKeyLett = "PS" }
+                        }
+                    },
+                    Events = new Dictionary<string, OperationSpec>()
+                    {
+                        {
+                            "IW1_Start", new OperationSpec()
+                            {
+                                Name = "IW1_Start", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        },
+                        {
+                            "IW2_Done", new OperationSpec()
+                            {
+                                Name = "IW2_Done", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
+                            }
+                        }
+                    }
+                }
+            },
             {
                 "PS", new ClassSpec()
                 {                
@@ -316,8 +407,8 @@ namespace ProcessManagement.Adaptor
                             { Name = "Step3Command", DataType = ParamSpec.DataType.String, Identity = 0, Writable = true, Mathematical = false, Reference = false, StateMachineState = false }
                         },
                         {
-                            "RequestingResource_ID", new PropSpec()
-                            { Name = "RequestingResource_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
+                            "Resource_ID", new PropSpec()
+                            { Name = "Resource_ID", DataType = ParamSpec.DataType.String, Identity = 0, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
                         }
                     },
                     Operations = new Dictionary<string, OperationSpec>(),
@@ -328,8 +419,8 @@ namespace ProcessManagement.Adaptor
                             { Name = "P[R1.'is used by']", RelID = "R1", Phrase = "is used by", Set = false, Condition = true, DstKeyLett = "P" }
                         },
                         {
-                            "RES[R8.'is requesting']", new LinkSpec()
-                            { Name = "RES[R8.'is requesting']", RelID = "R8", Phrase = "is requesting", Set = false, Condition = true, DstKeyLett = "RES" }
+                            "RES[R8]", new LinkSpec()
+                            { Name = "RES[R8]", RelID = "R8", Phrase = "", Set = false, Condition = true, DstKeyLett = "RES" }
                         }
                     },
                     Events = new Dictionary<string, OperationSpec>()
@@ -492,67 +583,6 @@ namespace ProcessManagement.Adaptor
                         }
                     }
                 }
-            },
-            {
-                "IW", new ClassSpec()
-                {                
-                    Name = "Intermediate Work",
-                    KeyLetter = "IW",
-                    Properties = new Dictionary<string, PropSpec>()
-                    {
-                        {
-                            "predecessorProcessSpec_ID", new PropSpec()
-                            { Name = "predecessorProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        },
-                        {
-                            "successorProcessSpec_ID", new PropSpec()
-                            { Name = "successorProcessSpec_ID", DataType = ParamSpec.DataType.String, Identity = 1, Writable = false, Mathematical = false, Reference = true, StateMachineState = false }
-                        },
-                        {
-                            "current_state", new PropSpec()
-                            { Name = "current_state", DataType = ParamSpec.DataType.Integer, Identity = 0, Writable = false, Mathematical = false, Reference = false, StateMachineState = true }
-                        }
-                    },
-                    Operations = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "ExecuteCommand", new OperationSpec()
-                            {
-                                Name = "ExecuteCommand", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                                {
-                                    { "prevCommand", new ParamSpec() {Name = "prevCommand", TypeKind = ParamSpec.DataType.String, IsArray = false} },
-                                    { "nextCommand", new ParamSpec() {Name = "nextCommand", TypeKind = ParamSpec.DataType.String, IsArray = false} }
-                                }
-                            }
-                        }
-                    },
-                    Links = new Dictionary<string, LinkSpec>()
-                    {
-                        {
-                            "PS[R5.'successor']", new LinkSpec()
-                            { Name = "PS[R5.'successor']", RelID = "R5", Phrase = "successor", Set = false, Condition = false, DstKeyLett = "PS" }
-                        },
-                        {
-                            "PS[R5.'predecessor']", new LinkSpec()
-                            { Name = "PS[R5.'predecessor']", RelID = "R5", Phrase = "predecessor", Set = false, Condition = false, DstKeyLett = "PS" }
-                        }
-                    },
-                    Events = new Dictionary<string, OperationSpec>()
-                    {
-                        {
-                            "IW1_Start", new OperationSpec()
-                            {
-                                Name = "IW1_Start", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        },
-                        {
-                            "IW2_Done", new OperationSpec()
-                            {
-                                Name = "IW2_Done", ReturnType = ParamSpec.DataType.Void, Parameters = new Dictionary<string, ParamSpec>()
-                            }
-                        }
-                    }
-                }
             }
         };
 
@@ -586,6 +616,8 @@ namespace ProcessManagement.Adaptor
                             domainModel.Verify3NotifyProcessStepDone();
                             break;
                     }
+                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) domainModel.InstanceRepository.ExternalStorageAdaptor.ClearCache(CIMProcessManagementLib.DomainName);
+
                 }
             }
 
@@ -608,33 +640,10 @@ namespace ProcessManagement.Adaptor
                         {
                             switch (classKeyLett)
                             {
-                                case "PS":
-                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).FirstOrDefault();
-                                    if (instanceOfPS != null)
-                                    {
-                                        switch (name)
-                                        {
-                                            case "ExecuteCommand":
-                                                instanceOfPS.ExecuteCommand(command:(string)invSpec.Parameters["command"]);
-                                                break;
-                                        }
-                                    }
-                                    break;
-                                case "RES":
-                                    var instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"])).FirstOrDefault();
-                                    if (instanceOfRES != null)
-                                    {
-                                        switch (name)
-                                        {
-                                            case "GetAssignerName":
-                                                 var resultOfGetAssignerName = new { result = instanceOfRES.GetAssignerName() };
-                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultOfGetAssignerName);
-                                                break;
-                                        }
-                                    }
-                                    break;
                                 case "IW":
-                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).FirstOrDefault();
+                                    var instanceOfIWTempSet = domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfIWTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "IW", instanceOfIWTempSet, () => { return $"predecessorProcessSpec_ID = '{invSpec.Identities["predecessorProcessSpec_ID"]}' AND successorProcessSpec_ID = '{invSpec.Identities["successorProcessSpec_ID"]}'"; }, () => { return DomainClassIWBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfIW = (DomainClassIW)instanceOfIWTempSet.FirstOrDefault();
                                     if (instanceOfIW != null)
                                     {
                                         switch (name)
@@ -642,7 +651,63 @@ namespace ProcessManagement.Adaptor
                                             case "ExecuteCommand":
                                                 instanceOfIW.ExecuteCommand(prevCommand:(string)invSpec.Parameters["prevCommand"], nextCommand:(string)invSpec.Parameters["nextCommand"]);
                                                 break;
+                                            default:
+                                                var resultJson = new { result = "error", status = $"\"error-unknown-operator\":\"{name}\"" };
+                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
+                                                break;
                                         }
+                                    }
+                                    else
+                                    {
+                                        var resultJson = new { result = "error", status = $"\"error-unexisted-instance\":\"{classKeyLett}[{invSpec.Identities["MiddleEntityId"]}]\"" };
+                                        result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
+                                    }
+                                    break;
+                                case "PS":
+                                    var instanceOfPSTempSet = domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfPSTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "PS", instanceOfPSTempSet, () => { return $"ProcessSpec_ID = '{invSpec.Identities["ProcessSpec_ID"]}'"; }, () => { return DomainClassPSBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfPS = (DomainClassPS)instanceOfPSTempSet.FirstOrDefault();
+                                    if (instanceOfPS != null)
+                                    {
+                                        switch (name)
+                                        {
+                                            case "ExecuteCommand":
+                                                instanceOfPS.ExecuteCommand(command:(string)invSpec.Parameters["command"]);
+                                                break;
+                                            default:
+                                                var resultJson = new { result = "error", status = $"\"error-unknown-operator\":\"{name}\"" };
+                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var resultJson = new { result = "error", status = $"\"error-unexisted-instance\":\"{classKeyLett}[{invSpec.Identities["MiddleEntityId"]}]\"" };
+                                        result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
+                                    }
+                                    break;
+                                case "RES":
+                                    var instanceOfRESTempSet = domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfRESTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "RES", instanceOfRESTempSet, () => { return $"Resource_ID = '{invSpec.Identities["Resource_ID"]}'"; }, () => { return DomainClassRESBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfRES = (DomainClassRES)instanceOfRESTempSet.FirstOrDefault();
+                                    if (instanceOfRES != null)
+                                    {
+                                        switch (name)
+                                        {
+                                            case "GetAssignerName":
+                                                var resultOfGetAssignerName = new { result = instanceOfRES.GetAssignerName() };
+                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultOfGetAssignerName);
+                                                break;
+                                            default:
+                                                var resultJson = new { result = "error", status = $"\"error-unknown-operator\":\"{name}\"" };
+                                                result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var resultJson = new { result = "error", status = $"\"error-unexisted-instance\":\"{classKeyLett}[{invSpec.Identities["MiddleEntityId"]}]\"" };
+                                        result = Newtonsoft.Json.JsonConvert.SerializeObject(resultJson);
                                     }
                                     break;
                             }
@@ -657,6 +722,7 @@ namespace ProcessManagement.Adaptor
 
         public override string SendEvent(string classKeyLett, string name, RequestingParameters parameters)
         {
+            string status = "";
             bool sent = false;
             if (classSpecs.ContainsKey(classKeyLett))
             {
@@ -671,103 +737,231 @@ namespace ProcessManagement.Adaptor
                         {
                             switch (classKeyLett)
                             {
+                                case "IW":
+                                    var instanceOfIWTempSet = domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfIWTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "IW", instanceOfIWTempSet, () => { return $"predecessorProcessSpec_ID = '{invSpec.Identities["predecessorProcessSpec_ID"]}' AND successorProcessSpec_ID = '{invSpec.Identities["successorProcessSpec_ID"]}'"; }, () => { return DomainClassIWBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfIW = (DomainClassIW)instanceOfIWTempSet.FirstOrDefault();
+                                    switch (name)
+                                    {
+                                        case "IW1_Start":
+                                            var evtOfIW1_Start = DomainClassIWStateMachine.IW1_Start.Create(instanceOfIW, isSelfEvent:false, sendNow:true);
+                                            if (evtOfIW1_Start != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - predecessorProcessSpec_ID = '{invSpec.Identities["predecessorProcessSpec_ID"]}' AND successorProcessSpec_ID = '{invSpec.Identities["successorProcessSpec_ID"]}'";
+                                            }
+                                            break;
+                                        case "IW2_Done":
+                                            var evtOfIW2_Done = DomainClassIWStateMachine.IW2_Done.Create(instanceOfIW, isSelfEvent:false, sendNow:true);
+                                            if (evtOfIW2_Done != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - predecessorProcessSpec_ID = '{invSpec.Identities["predecessorProcessSpec_ID"]}' AND successorProcessSpec_ID = '{invSpec.Identities["successorProcessSpec_ID"]}'";
+                                            }
+                                            break;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
+                                            break;
+                                    }
+                                    break;
                                 case "PS":
-                                    var instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"])).FirstOrDefault();
+                                    var instanceOfPSTempSet = domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == invSpec.Identities["ProcessSpec_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfPSTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "PS", instanceOfPSTempSet, () => { return $"ProcessSpec_ID = '{invSpec.Identities["ProcessSpec_ID"]}'"; }, () => { return DomainClassPSBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfPS = (DomainClassPS)instanceOfPSTempSet.FirstOrDefault();
                                     switch (name)
                                     {
                                         case "PS1_Start":
-                                            DomainClassPSStateMachine.PS1_Start.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
+                                            var evtOfPS1_Start = DomainClassPSStateMachine.PS1_Start.Create(instanceOfPS, isSelfEvent:false, sendNow:true);
+                                            if (evtOfPS1_Start != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - ProcessSpec_ID = '{invSpec.Identities["ProcessSpec_ID"]}'";
+                                            }
                                             break;
                                         case "PS2_Done":
-                                            DomainClassPSStateMachine.PS2_Done.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
+                                            var evtOfPS2_Done = DomainClassPSStateMachine.PS2_Done.Create(instanceOfPS, isSelfEvent:false, sendNow:true);
+                                            if (evtOfPS2_Done != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - ProcessSpec_ID = '{invSpec.Identities["ProcessSpec_ID"]}'";
+                                            }
                                             break;
                                         case "PS3_Prepared":
-                                            DomainClassPSStateMachine.PS3_Prepared.Create(instanceOfPS, sendNow:true);
-                                            sent = true;
+                                            var evtOfPS3_Prepared = DomainClassPSStateMachine.PS3_Prepared.Create(instanceOfPS, isSelfEvent:false, sendNow:true);
+                                            if (evtOfPS3_Prepared != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - ProcessSpec_ID = '{invSpec.Identities["ProcessSpec_ID"]}'";
+                                            }
+                                            break;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
                                             break;
                                     }
                                     break;
                                 case "P":
-                                    var instanceOfP = (DomainClassP)domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == invSpec.Identities["Process_ID"])).FirstOrDefault();
+                                    var instanceOfPTempSet = domainModel.InstanceRepository.GetDomainInstances("P").Where(selected => (((DomainClassP)selected).Attr_Process_ID == invSpec.Identities["Process_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfPTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "P", instanceOfPTempSet, () => { return $"Process_ID = '{invSpec.Identities["Process_ID"]}'"; }, () => { return DomainClassPBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfP = (DomainClassP)instanceOfPTempSet.FirstOrDefault();
                                     switch (name)
                                     {
                                         case "P1_StartProcess":
-                                            DomainClassPStateMachine.P1_StartProcess.Create(instanceOfP, Requester_ID:(string)invSpec.Parameters["Requester_ID"], Resource_ID:(string)invSpec.Parameters["Resource_ID"], sendNow:true, domainModel.InstanceRepository, logger:logger);
+                                            DomainClassPStateMachine.P1_StartProcess.Create(instanceOfP, Requester_ID:(string)invSpec.Parameters["Requester_ID"], Resource_ID:(string)invSpec.Parameters["Resource_ID"], isSelfEvent:false, sendNow:true, domainModel.InstanceRepository, logger:logger);
                                             sent = true;
                                             break;
                                         case "P2_ProceedProcessStep":
-                                            DomainClassPStateMachine.P2_ProceedProcessStep.Create(instanceOfP, sendNow:true);
-                                            sent = true;
+                                            var evtOfP2_ProceedProcessStep = DomainClassPStateMachine.P2_ProceedProcessStep.Create(instanceOfP, isSelfEvent:false, sendNow:true);
+                                            if (evtOfP2_ProceedProcessStep != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Process_ID = '{invSpec.Identities["Process_ID"]}'";
+                                            }
                                             break;
                                         case "P3_DoneAllSteps":
-                                            DomainClassPStateMachine.P3_DoneAllSteps.Create(instanceOfP, sendNow:true);
-                                            sent = true;
+                                            var evtOfP3_DoneAllSteps = DomainClassPStateMachine.P3_DoneAllSteps.Create(instanceOfP, isSelfEvent:false, sendNow:true);
+                                            if (evtOfP3_DoneAllSteps != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Process_ID = '{invSpec.Identities["Process_ID"]}'";
+                                            }
+                                            break;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
                                             break;
                                     }
                                     break;
                                 case "REQ":
-                                    var instanceOfREQ = (DomainClassREQ)domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"])).FirstOrDefault();
+                                    var instanceOfREQTempSet = domainModel.InstanceRepository.GetDomainInstances("REQ").Where(selected => (((DomainClassREQ)selected).Attr_Requester_ID == invSpec.Identities["Requester_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfREQTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "REQ", instanceOfREQTempSet, () => { return $"Requester_ID = '{invSpec.Identities["Requester_ID"]}'"; }, () => { return DomainClassREQBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfREQ = (DomainClassREQ)instanceOfREQTempSet.FirstOrDefault();
                                     switch (name)
                                     {
                                         case "REQ1_RequestProcess":
-                                            DomainClassREQStateMachine.REQ1_RequestProcess.Create(instanceOfREQ, ResourceName:(string)invSpec.Parameters["ResourceName"], Step1Command:(string)invSpec.Parameters["Step1Command"], Step2Command:(string)invSpec.Parameters["Step2Command"], Step3Command:(string)invSpec.Parameters["Step3Command"], sendNow:true, domainModel.InstanceRepository, logger:logger);
+                                            DomainClassREQStateMachine.REQ1_RequestProcess.Create(instanceOfREQ, ResourceName:(string)invSpec.Parameters["ResourceName"], Step1Command:(string)invSpec.Parameters["Step1Command"], Step2Command:(string)invSpec.Parameters["Step2Command"], Step3Command:(string)invSpec.Parameters["Step3Command"], isSelfEvent:false, sendNow:true, domainModel.InstanceRepository, logger:logger);
                                             sent = true;
                                             break;
                                         case "REQ2_Assigned":
-                                            DomainClassREQStateMachine.REQ2_Assigned.Create(instanceOfREQ, sendNow:true);
-                                            sent = true;
+                                            var evtOfREQ2_Assigned = DomainClassREQStateMachine.REQ2_Assigned.Create(instanceOfREQ, isSelfEvent:false, sendNow:true);
+                                            if (evtOfREQ2_Assigned != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Requester_ID = '{invSpec.Identities["Requester_ID"]}'";
+                                            }
                                             break;
                                         case "REQ3_Done":
-                                            DomainClassREQStateMachine.REQ3_Done.Create(instanceOfREQ, sendNow:true);
-                                            sent = true;
+                                            var evtOfREQ3_Done = DomainClassREQStateMachine.REQ3_Done.Create(instanceOfREQ, isSelfEvent:false, sendNow:true);
+                                            if (evtOfREQ3_Done != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Requester_ID = '{invSpec.Identities["Requester_ID"]}'";
+                                            }
+                                            break;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
                                             break;
                                     }
                                     break;
                                 case "RES":
-                                    var instanceOfRES = (DomainClassRES)domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"])).FirstOrDefault();
+                                    var instanceOfRESTempSet = domainModel.InstanceRepository.GetDomainInstances("RES").Where(selected => (((DomainClassRES)selected).Attr_Resource_ID == invSpec.Identities["Resource_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfRESTempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "RES", instanceOfRESTempSet, () => { return $"Resource_ID = '{invSpec.Identities["Resource_ID"]}'"; }, () => { return DomainClassRESBase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfRES = (DomainClassRES)instanceOfRESTempSet.FirstOrDefault();
                                     switch (name)
                                     {
                                         case "RES1_Freed":
-                                            DomainClassRESStateMachine.RES1_Freed.Create(instanceOfRES, sendNow:true);
-                                            sent = true;
+                                            var evtOfRES1_Freed = DomainClassRESStateMachine.RES1_Freed.Create(instanceOfRES, isSelfEvent:false, sendNow:true);
+                                            if (evtOfRES1_Freed != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Resource_ID = '{invSpec.Identities["Resource_ID"]}'";
+                                            }
                                             break;
                                         case "RES2_Assigned":
-                                            DomainClassRESStateMachine.RES2_Assigned.Create(instanceOfRES, sendNow:true);
-                                            sent = true;
+                                            var evtOfRES2_Assigned = DomainClassRESStateMachine.RES2_Assigned.Create(instanceOfRES, isSelfEvent:false, sendNow:true);
+                                            if (evtOfRES2_Assigned != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - Resource_ID = '{invSpec.Identities["Resource_ID"]}'";
+                                            }
+                                            break;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
                                             break;
                                     }
                                     break;
                                 case "RA":
-                                    var instanceOfRA = (DomainClassRA)domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == invSpec.Identities["RA_ID"])).FirstOrDefault();
+                                    var instanceOfRATempSet = domainModel.InstanceRepository.GetDomainInstances("RA").Where(selected => (((DomainClassRA)selected).Attr_RA_ID == invSpec.Identities["RA_ID"]));
+                                    if (domainModel.InstanceRepository.ExternalStorageAdaptor != null) instanceOfRATempSet = domainModel.InstanceRepository.ExternalStorageAdaptor.CheckInstanceStatus(CIMProcessManagementLib.DomainName, "RA", instanceOfRATempSet, () => { return $"RA_ID = '{invSpec.Identities["RA_ID"]}'"; }, () => { return DomainClassRABase.CreateInstance(domainModel.InstanceRepository, logger); }, "any").Result;
+                                    var instanceOfRA = (DomainClassRA)instanceOfRATempSet.FirstOrDefault();
                                     switch (name)
                                     {
                                         case "RA1_RequestResource":
-                                            DomainClassRAStateMachine.RA1_RequestResource.Create(instanceOfRA, sendNow:true);
-                                            sent = true;
+                                            var evtOfRA1_RequestResource = DomainClassRAStateMachine.RA1_RequestResource.Create(instanceOfRA, isSelfEvent:false, sendNow:true);
+                                            if (evtOfRA1_RequestResource != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - RA_ID = '{invSpec.Identities["RA_ID"]}'";
+                                            }
                                             break;
                                         case "RA2_ResourceFreed":
-                                            DomainClassRAStateMachine.RA2_ResourceFreed.Create(instanceOfRA, sendNow:true);
-                                            sent = true;
+                                            var evtOfRA2_ResourceFreed = DomainClassRAStateMachine.RA2_ResourceFreed.Create(instanceOfRA, isSelfEvent:false, sendNow:true);
+                                            if (evtOfRA2_ResourceFreed != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - RA_ID = '{invSpec.Identities["RA_ID"]}'";
+                                            }
                                             break;
                                         case "RA3_Assigned":
-                                            DomainClassRAStateMachine.RA3_Assigned.Create(instanceOfRA, sendNow:true);
-                                            sent = true;
+                                            var evtOfRA3_Assigned = DomainClassRAStateMachine.RA3_Assigned.Create(instanceOfRA, isSelfEvent:false, sendNow:true);
+                                            if (evtOfRA3_Assigned != null)
+                                            {
+                                                sent = true;
+                                            }
+                                            else
+                                            {
+                                                status = $"unexisted instance - RA_ID = '{invSpec.Identities["RA_ID"]}'";
+                                            }
                                             break;
-                                    }
-                                    break;
-                                case "IW":
-                                    var instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == invSpec.Identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == invSpec.Identities["successorProcessSpec_ID"])).FirstOrDefault();
-                                    switch (name)
-                                    {
-                                        case "IW1_Start":
-                                            DomainClassIWStateMachine.IW1_Start.Create(instanceOfIW, sendNow:true);
-                                            sent = true;
-                                            break;
-                                        case "IW2_Done":
-                                            DomainClassIWStateMachine.IW2_Done.Create(instanceOfIW, sendNow:true);
-                                            sent = true;
+                                        default:
+                                            status = $"unknown event label:'{name}'";
                                             break;
                                     }
                                     break;
@@ -776,7 +970,7 @@ namespace ProcessManagement.Adaptor
                     }
                 }
             }
-            var result = new { sent = sent };
+            var result = new { sent = sent, status = status };
             return Newtonsoft.Json.JsonConvert.SerializeObject(result);
         }
 
@@ -872,6 +1066,14 @@ namespace ProcessManagement.Adaptor
                 {
                     switch (classKeyLett)
                     {
+                        case "IW":
+                            var instanceOfIW = (DomainClassIW)instance;
+                            var resultOfinstanceOfIW = new Dictionary<string, object>();
+                            resultOfinstanceOfIW.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
+                            resultOfinstanceOfIW.Add("successorProcessSpec_ID", instanceOfIW.Attr_successorProcessSpec_ID);
+                            resultOfinstanceOfIW.Add("current_state", instanceOfIW.Attr_current_state);
+                            resultInstances.Add(resultOfinstanceOfIW);
+                            break;
                         case "PS":
                             var instanceOfPS = (DomainClassPS)instance;
                             var resultOfinstanceOfPS = new Dictionary<string, object>();
@@ -909,7 +1111,7 @@ namespace ProcessManagement.Adaptor
                             resultOfinstanceOfREQ.Add("Step1Command", instanceOfREQ.Attr_Step1Command);
                             resultOfinstanceOfREQ.Add("Step2Command", instanceOfREQ.Attr_Step2Command);
                             resultOfinstanceOfREQ.Add("Step3Command", instanceOfREQ.Attr_Step3Command);
-                            resultOfinstanceOfREQ.Add("RequestingResource_ID", instanceOfREQ.Attr_RequestingResource_ID);
+                            resultOfinstanceOfREQ.Add("Resource_ID", instanceOfREQ.Attr_Resource_ID);
                             resultInstances.Add(resultOfinstanceOfREQ);
                             break;
                         case "RES":
@@ -933,14 +1135,6 @@ namespace ProcessManagement.Adaptor
                             resultOfinstanceOfRA.Add("TestBoolean", instanceOfRA.Attr_TestBoolean);
                             resultInstances.Add(resultOfinstanceOfRA);
                             break;
-                        case "IW":
-                            var instanceOfIW = (DomainClassIW)instance;
-                            var resultOfinstanceOfIW = new Dictionary<string, object>();
-                            resultOfinstanceOfIW.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
-                            resultOfinstanceOfIW.Add("successorProcessSpec_ID", instanceOfIW.Attr_successorProcessSpec_ID);
-                            resultOfinstanceOfIW.Add("current_state", instanceOfIW.Attr_current_state);
-                            resultInstances.Add(resultOfinstanceOfIW);
-                            break;
                     }
                 }
                 
@@ -954,6 +1148,15 @@ namespace ProcessManagement.Adaptor
             Dictionary<string, object> resultInstance = new Dictionary<string, object>();
             switch (classKeyLett)
             {
+                case "IW":
+                    DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
+                    if (instanceOfIW != null)
+                    {
+                        resultInstance.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
+                        resultInstance.Add("successorProcessSpec_ID", instanceOfIW.Attr_successorProcessSpec_ID);
+                        resultInstance.Add("current_state", instanceOfIW.Attr_current_state);
+                    }
+                    break;
                 case "PS":
                     DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).FirstOrDefault();
                     if (instanceOfPS != null)
@@ -995,7 +1198,7 @@ namespace ProcessManagement.Adaptor
                         resultInstance.Add("Step1Command", instanceOfREQ.Attr_Step1Command);
                         resultInstance.Add("Step2Command", instanceOfREQ.Attr_Step2Command);
                         resultInstance.Add("Step3Command", instanceOfREQ.Attr_Step3Command);
-                        resultInstance.Add("RequestingResource_ID", instanceOfREQ.Attr_RequestingResource_ID);
+                        resultInstance.Add("Resource_ID", instanceOfREQ.Attr_Resource_ID);
                     }
                     break;
                 case "RES":
@@ -1021,15 +1224,6 @@ namespace ProcessManagement.Adaptor
                         resultInstance.Add("TestBoolean", instanceOfRA.Attr_TestBoolean);
                     }
                     break;
-                case "IW":
-                    DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
-                    if (instanceOfIW != null)
-                    {
-                        resultInstance.Add("predecessorProcessSpec_ID", instanceOfIW.Attr_predecessorProcessSpec_ID);
-                        resultInstance.Add("successorProcessSpec_ID", instanceOfIW.Attr_successorProcessSpec_ID);
-                        resultInstance.Add("current_state", instanceOfIW.Attr_current_state);
-                    }
-                    break;
             }
             return Newtonsoft.Json.JsonConvert.SerializeObject(resultInstance);
         }
@@ -1044,6 +1238,45 @@ namespace ProcessManagement.Adaptor
                 {
                     switch (classKeyLett)
                     {
+                        case "IW":
+                            DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
+                            if (instanceOfIW != null)
+                            {
+                                switch (relName)
+                                {
+                                    case "PS[R5.'successor']":
+                                        var linkedInstanceOfR5OneSuccessorPS = instanceOfIW.LinkedR5OneSuccessor();
+                                        if (linkedInstanceOfR5OneSuccessorPS != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR5OneSuccessorPS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR5OneSuccessorPS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR5OneSuccessorPS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR5OneSuccessorPS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR5OneSuccessorPS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR5OneSuccessorPS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                    case "PS[R5.'predecessor']":
+                                        var linkedInstanceOfR5OtherPredecessorPS = instanceOfIW.LinkedR5OtherPredecessor();
+                                        if (linkedInstanceOfR5OtherPredecessorPS != null)
+                                        {
+                                            resultInstances.Add(new Dictionary<string, object>()
+                                            {
+                                                { "ProcessSpec_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_ProcessSpec_ID },
+                                                { "Order_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_Order_ID },
+                                                { "Number", linkedInstanceOfR5OtherPredecessorPS.Attr_Number },
+                                                { "Process_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_Process_ID },
+                                                { "Finished", linkedInstanceOfR5OtherPredecessorPS.Attr_Finished },
+                                                { "current_state", linkedInstanceOfR5OtherPredecessorPS.Attr_current_state }
+                                            });
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
                         case "PS":
                             DomainClassPS instanceOfPS = (DomainClassPS)domainModel.InstanceRepository.GetDomainInstances("PS").Where(selected => (((DomainClassPS)selected).Attr_ProcessSpec_ID == identities["ProcessSpec_ID"])).FirstOrDefault();
                             if (instanceOfPS != null)
@@ -1189,7 +1422,7 @@ namespace ProcessManagement.Adaptor
                                                 { "Step1Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step1Command },
                                                 { "Step2Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step2Command },
                                                 { "Step3Command", linkedInstanceOfR1OneIsUsedByREQ.Attr_Step3Command },
-                                                { "RequestingResource_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_RequestingResource_ID }
+                                                { "Resource_ID", linkedInstanceOfR1OneIsUsedByREQ.Attr_Resource_ID }
                                             });
                                         }
                                         break;
@@ -1260,16 +1493,16 @@ namespace ProcessManagement.Adaptor
                                             });
                                         }
                                         break;
-                                    case "RES[R8.'is requesting']":
-                                        var linkedInstanceOfR8IsRequestingRES = instanceOfREQ.LinkedR8IsRequesting();
-                                        if (linkedInstanceOfR8IsRequestingRES != null)
+                                    case "RES[R8]":
+                                        var linkedInstanceOfR8RES = instanceOfREQ.LinkedR8();
+                                        if (linkedInstanceOfR8RES != null)
                                         {
                                             resultInstances.Add(new Dictionary<string, object>()
                                             {
-                                                { "Resource_ID", linkedInstanceOfR8IsRequestingRES.Attr_Resource_ID },
-                                                { "current_state", linkedInstanceOfR8IsRequestingRES.Attr_current_state },
-                                                { "Name", linkedInstanceOfR8IsRequestingRES.Attr_Name },
-                                                { "RA_ID", linkedInstanceOfR8IsRequestingRES.Attr_RA_ID }
+                                                { "Resource_ID", linkedInstanceOfR8RES.Attr_Resource_ID },
+                                                { "current_state", linkedInstanceOfR8RES.Attr_current_state },
+                                                { "Name", linkedInstanceOfR8RES.Attr_Name },
+                                                { "RA_ID", linkedInstanceOfR8RES.Attr_RA_ID }
                                             });
                                         }
                                         break;
@@ -1308,7 +1541,7 @@ namespace ProcessManagement.Adaptor
                                                 { "Step1Command", linkedInstanceOfR8REQ.Attr_Step1Command },
                                                 { "Step2Command", linkedInstanceOfR8REQ.Attr_Step2Command },
                                                 { "Step3Command", linkedInstanceOfR8REQ.Attr_Step3Command },
-                                                { "RequestingResource_ID", linkedInstanceOfR8REQ.Attr_RequestingResource_ID }
+                                                { "Resource_ID", linkedInstanceOfR8REQ.Attr_Resource_ID }
                                             });
                                         }
                                         break;
@@ -1347,45 +1580,6 @@ namespace ProcessManagement.Adaptor
                                                 { "current_state", linkedInstanceOfR6RES.Attr_current_state },
                                                 { "Name", linkedInstanceOfR6RES.Attr_Name },
                                                 { "RA_ID", linkedInstanceOfR6RES.Attr_RA_ID }
-                                            });
-                                        }
-                                        break;
-                                }
-                            }
-                            break;
-                        case "IW":
-                            DomainClassIW instanceOfIW = (DomainClassIW)domainModel.InstanceRepository.GetDomainInstances("IW").Where(selected => (((DomainClassIW)selected).Attr_predecessorProcessSpec_ID == identities["predecessorProcessSpec_ID"] && ((DomainClassIW)selected).Attr_successorProcessSpec_ID == identities["successorProcessSpec_ID"])).FirstOrDefault();
-                            if (instanceOfIW != null)
-                            {
-                                switch (relName)
-                                {
-                                    case "PS[R5.'successor']":
-                                        var linkedInstanceOfR5OneSuccessorPS = instanceOfIW.LinkedR5OneSuccessor();
-                                        if (linkedInstanceOfR5OneSuccessorPS != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR5OneSuccessorPS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR5OneSuccessorPS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR5OneSuccessorPS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR5OneSuccessorPS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR5OneSuccessorPS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR5OneSuccessorPS.Attr_current_state }
-                                            });
-                                        }
-                                        break;
-                                    case "PS[R5.'predecessor']":
-                                        var linkedInstanceOfR5OtherPredecessorPS = instanceOfIW.LinkedR5OtherPredecessor();
-                                        if (linkedInstanceOfR5OtherPredecessorPS != null)
-                                        {
-                                            resultInstances.Add(new Dictionary<string, object>()
-                                            {
-                                                { "ProcessSpec_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_ProcessSpec_ID },
-                                                { "Order_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_Order_ID },
-                                                { "Number", linkedInstanceOfR5OtherPredecessorPS.Attr_Number },
-                                                { "Process_ID", linkedInstanceOfR5OtherPredecessorPS.Attr_Process_ID },
-                                                { "Finished", linkedInstanceOfR5OtherPredecessorPS.Attr_Finished },
-                                                { "current_state", linkedInstanceOfR5OtherPredecessorPS.Attr_current_state }
                                             });
                                         }
                                         break;

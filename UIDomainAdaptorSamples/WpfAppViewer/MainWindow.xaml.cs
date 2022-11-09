@@ -1,11 +1,15 @@
-﻿using Kae.DomainModel.Csharp.Framework;
+﻿using Azure.Identity;
+using Kae.DomainModel.Csharp.Framework;
 using Kae.DomainModel.Csharp.Framework.Adaptor;
 using Kae.Utility.Logging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -35,6 +39,8 @@ namespace Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer
         protected static DomainModelAdaptor domainModelAdaptor;
         public static DomainModelAdaptor GetDomainModelAdaptor() { return domainModelAdaptor; }
 
+        protected IConfigurationRoot appConfiguration;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -57,6 +63,7 @@ namespace Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer
         {
             lbInstances.ItemsSource = classInstances;
 
+            appConfiguration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         }
 
         protected void LoadDomainModelSpecification()
@@ -286,11 +293,54 @@ namespace Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer
 
         private void buttonLoadDomainModelAdaptorDLL_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dilalog = new OpenFileDialog();
-            dilalog.Filter = "DLL FIle|*.dll";
-            if (dilalog.ShowDialog()==true)
+            MessageBox.Show("Please select generated domain model library project directory.");
+            try
             {
-                tbDomainModelAdaptorDLL.Text = dilalog.FileName;
+                string dllFilePath = "";
+                using (var folderDialog = new CommonOpenFileDialog() { IsFolderPicker = true })
+                {
+                    if (folderDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        string projectPath = folderDialog.FileName;
+                        var pathInfo = new DirectoryInfo(projectPath);
+                        string projectName = pathInfo.Name;
+                        string projectDLLFolderPath = System.IO.Path.Join(projectPath, "out");
+                        string projectDLLPath = System.IO.Path.Join(projectDLLFolderPath, $"{projectName}.dll");
+                        bool publishing = true;
+                        if (File.Exists(projectDLLPath))
+                        {
+                            if (MessageBox.Show("Need to republish?", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                            {
+                                Directory.Delete(projectDLLFolderPath, true);
+                            }
+                            else
+                            {
+                                publishing = false;
+                                dllFilePath = projectDLLPath;
+                            }
+                        }
+                        if (publishing)
+                        {
+                            if (!Directory.Exists(projectDLLFolderPath))
+                            {
+                                Directory.CreateDirectory(projectDLLFolderPath);
+                            }
+                            using (var publishProcess = new Process())
+                            {
+                                publishProcess.StartInfo.WorkingDirectory = projectPath;
+                                string publishMode = ((ComboBoxItem)cbPublishMode.SelectedItem).Content.ToString();
+                                publishProcess.StartInfo.Arguments = $"publish -c {publishMode} -o out";
+                                publishProcess.StartInfo.FileName = "dotnet";
+                                if (publishProcess.Start())
+                                {
+                                    logger.LogInfo($"Succeeded to publish {projectName}.dll");
+                                    dllFilePath = projectDLLPath;
+                                }
+                            }
+                        }
+                    }
+                }
+                tbDomainModelAdaptorDLL.Text =dllFilePath;
                 var adaptorAssembly = Assembly.LoadFrom(tbDomainModelAdaptorDLL.Text);
                 var loadedModules = adaptorAssembly.GetLoadedModules();
                 if (loadedModules.Length > 0)
@@ -306,6 +356,28 @@ namespace Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer
                             domainModelAdaptor = methodOfGetAdaptor.Invoke(null, new object[] { logger }) as DomainModelAdaptor;
                             if (domainModelAdaptor != null)
                             {
+                                var configForDomainModel = new Dictionary<string, IDictionary<string, object>>();
+                                var domainModelConfigKeys = domainModelAdaptor.ConfigurationKeys();
+                                foreach (var eeKey in domainModelConfigKeys.Keys)
+                                {
+                                    configForDomainModel.Add(eeKey, new Dictionary<string, object>());
+                                    if (eeKey == "AzureDigitalTwins")
+                                    {
+                                        string adtInstanceUriKey = "ADTInstanceUri";
+                                        configForDomainModel[eeKey].Add(adtInstanceUriKey, appConfiguration.GetConnectionString(adtInstanceUriKey));
+                                        string adtCredentialKey = "ADTCredential";
+                                        configForDomainModel[eeKey].Add(adtCredentialKey, new DefaultAzureCredential());
+                                    }
+                                    else
+                                    {
+                                        foreach (var ckey in domainModelConfigKeys[eeKey])
+                                        {
+                                            configForDomainModel[eeKey].Add(ckey, appConfiguration.GetConnectionString(ckey));
+                                        }
+                                    }
+                                }
+                                domainModelAdaptor.Initialize(configForDomainModel);
+
                                 LoadDomainModelSpecification();
                                 buttonLoadDomainModelAdaptorDLL.IsEnabled = false;
                                 tbDomainName.Text = $"Domain Model : {domainModelAdaptor.DomainModelName}";
@@ -313,6 +385,10 @@ namespace Kae.DomainModel.CSharp.Utilitiy.Application.WpfAppDomainModelViewer
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
             }
 
         }

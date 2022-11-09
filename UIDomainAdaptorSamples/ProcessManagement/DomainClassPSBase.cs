@@ -13,20 +13,26 @@ using System.Linq;
 using Kae.StateMachine;
 using Kae.Utility.Logging;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
     public partial class DomainClassPSBase : DomainClassPS
     {
         protected static readonly string className = "PS";
+
+        public string DomainName { get { return CIMProcessManagementLib.DomainName; }}
         public string ClassName { get { return className; } }
 
         InstanceRepository instanceRepository;
         protected Logger logger;
 
-        public static DomainClassPSBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null)
+
+        public string GetIdForExternalStorage() {  return $"ProcessSpec_ID={attr_ProcessSpec_ID}"; }
+
+        public static DomainClassPSBase CreateInstance(InstanceRepository instanceRepository, Logger logger=null, IList<ChangedState> changedStates=null, bool synchronousMode = false)
         {
-            var newInstance = new DomainClassPSBase(instanceRepository, logger);
+            var newInstance = new DomainClassPSBase(instanceRepository, logger, synchronousMode);
             if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:PS(ProcessSpec_ID={newInstance.Attr_ProcessSpec_ID}):create");
 
             instanceRepository.Add(newInstance);
@@ -36,12 +42,12 @@ namespace ProcessManagement
             return newInstance;
         }
 
-        public DomainClassPSBase(InstanceRepository instanceRepository, Logger logger)
+        public DomainClassPSBase(InstanceRepository instanceRepository, Logger logger, bool synchronousMode)
         {
             this.instanceRepository = instanceRepository;
             this.logger = logger;
             attr_ProcessSpec_ID = Guid.NewGuid().ToString();
-            stateMachine = new DomainClassPSStateMachine(this, instanceRepository, logger);
+            stateMachine = new DomainClassPSStateMachine(this, synchronousMode, instanceRepository, logger);
         }
         protected string attr_ProcessSpec_ID;
         protected bool stateof_ProcessSpec_ID = false;
@@ -121,8 +127,12 @@ namespace ProcessManagement
         {
             if (relR4OS == null)
             {
-           var candidates = instanceRepository.GetDomainInstances("OS").Where(inst=>(this.Attr_Order_ID==((DomainClassOS)inst).Attr_Order_ID));
-           relR4OS = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R4", Phrase = "" };
+                var candidates = instanceRepository.GetDomainInstances("OS").Where(inst=>(this.Attr_Order_ID==((DomainClassOS)inst).Attr_Order_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "OS", "R4", candidates, () => { return DomainClassOSBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
+                relR4OS = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R4", Phrase = "" };
 
             }
             return relR4OS.GetDestination<DomainClassOS>();
@@ -134,6 +144,7 @@ namespace ProcessManagement
             if (relR4OS == null)
             {
                 this.attr_Order_ID = instance.Attr_Order_ID;
+                this.stateof_Order_ID = true;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:PS(ProcessSpec_ID={this.Attr_ProcessSpec_ID}):link[OS(Order_ID={instance.Attr_Order_ID})]");
 
@@ -154,6 +165,7 @@ namespace ProcessManagement
                 if (changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Delete, Target = relR4OS });
         
                 this.attr_Order_ID = null;
+                this.stateof_Order_ID = true;
                 relR4OS = null;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:PS(ProcessSpec_ID={this.Attr_ProcessSpec_ID}):unlink[OS(Order_ID={instance.Attr_Order_ID})]");
@@ -167,8 +179,12 @@ namespace ProcessManagement
         {
             if (relR2P == null)
             {
-           var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Process_ID==((DomainClassP)inst).Attr_Process_ID));
-           relR2P = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R2", Phrase = "" };
+                var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_Process_ID==((DomainClassP)inst).Attr_Process_ID));
+                if (candidates.Count() == 0)
+                {
+                   if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "P", "R2", candidates, () => { return DomainClassPBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                }
+                relR2P = new LinkedInstance() { Source = this, Destination = candidates.FirstOrDefault(), RelationshipID = "R2", Phrase = "" };
 
             }
             return relR2P.GetDestination<DomainClassP>();
@@ -180,6 +196,7 @@ namespace ProcessManagement
             if (relR2P == null)
             {
                 this.attr_Process_ID = instance.Attr_Process_ID;
+                this.stateof_Process_ID = true;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:PS(ProcessSpec_ID={this.Attr_ProcessSpec_ID}):link[P(Process_ID={instance.Attr_Process_ID})]");
 
@@ -200,6 +217,7 @@ namespace ProcessManagement
                 if (changedStates != null) changedStates.Add(new CLinkChangedState() { OP = ChangedState.Operation.Delete, Target = relR2P });
         
                 this.attr_Process_ID = null;
+                this.stateof_Process_ID = true;
                 relR2P = null;
 
                 if (logger != null) logger.LogInfo($"@{DateTime.Now.ToString("yyyyMMddHHmmss.fff")}:PS(ProcessSpec_ID={this.Attr_ProcessSpec_ID}):unlink[P(Process_ID={instance.Attr_Process_ID})]");
@@ -211,25 +229,45 @@ namespace ProcessManagement
         }
         public DomainClassIW LinkedR5OtherPredecessor()
         {
-            var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_predecessorProcessSpec_ID && this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_successorProcessSpec_ID));
+            var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_predecessorProcessSpec_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "IW", "R5_Predecessor", candidates, () => { return DomainClassIWBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassIW)candidates.FirstOrDefault()).LinkedR5OneSuccessor();
+            }
             return (DomainClassIW)candidates.FirstOrDefault();
         }
 
 
         public DomainClassIW LinkedR5OneSuccessor()
         {
-            var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_predecessorProcessSpec_ID && this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_successorProcessSpec_ID));
+            var candidates = instanceRepository.GetDomainInstances("IW").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassIW)inst).Attr_successorProcessSpec_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "IW", "R5_Successor", candidates, () => { return DomainClassIWBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassIW)candidates.FirstOrDefault()).LinkedR5OtherPredecessor();
+            }
             return (DomainClassIW)candidates.FirstOrDefault();
         }
 
         public DomainClassP LinkedR3()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassP)inst).Attr_firstProcessSpec_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "P", "R3", candidates, () => { return DomainClassPBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassP)candidates.FirstOrDefault()).LinkedR3FirstStep();
+            }
             return (DomainClassP)candidates.FirstOrDefault();
         }
         public DomainClassP LinkedR7()
         {
             var candidates = instanceRepository.GetDomainInstances("P").Where(inst=>(this.Attr_ProcessSpec_ID==((DomainClassP)inst).Attr_currentProcessSpec_ID));
+            if (candidates.Count() == 0)
+            {
+                if (instanceRepository.ExternalStorageAdaptor != null) candidates = instanceRepository.ExternalStorageAdaptor.CheckTraverseStatus(DomainName, this, "P", "R7", candidates, () => { return DomainClassPBase.CreateInstance(instanceRepository, logger); }, "any").Result;
+                if (candidates.Count() > 0) ((DomainClassP)candidates.FirstOrDefault()).LinkedR7CurrentStep();
+            }
             return (DomainClassP)candidates.FirstOrDefault();
         }
 
@@ -274,17 +312,36 @@ namespace ProcessManagement
         // methods for storage
         public void Restore(IDictionary<string, object> propertyValues)
         {
-            attr_ProcessSpec_ID = (string)propertyValues["ProcessSpec_ID"];
+            if (propertyValues.ContainsKey("ProcessSpec_ID"))
+            {
+                attr_ProcessSpec_ID = (string)propertyValues["ProcessSpec_ID"];
+            }
             stateof_ProcessSpec_ID = false;
-            attr_Order_ID = (string)propertyValues["Order_ID"];
+            if (propertyValues.ContainsKey("Order_ID"))
+            {
+                attr_Order_ID = (string)propertyValues["Order_ID"];
+            }
             stateof_Order_ID = false;
-            attr_Number = (int)propertyValues["Number"];
+            if (propertyValues.ContainsKey("Number"))
+            {
+                attr_Number = (int)propertyValues["Number"];
+            }
             stateof_Number = false;
-            attr_Process_ID = (string)propertyValues["Process_ID"];
+            if (propertyValues.ContainsKey("Process_ID"))
+            {
+                attr_Process_ID = (string)propertyValues["Process_ID"];
+            }
             stateof_Process_ID = false;
-            attr_Finished = (bool)propertyValues["Finished"];
+            if (propertyValues.ContainsKey("Finished"))
+            {
+                attr_Finished = (bool)propertyValues["Finished"];
+            }
             stateof_Finished = false;
-            stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            if (propertyValues.ContainsKey("current_state"))
+            {
+                stateMachine.ForceUpdateState((int)propertyValues["current_state"]);
+            }
+            stateof_current_state = false;
         }
         
         public IDictionary<string, object> ChangedProperties()

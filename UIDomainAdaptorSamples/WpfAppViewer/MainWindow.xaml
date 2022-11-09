@@ -21,11 +21,16 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition/>
-                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="Domain Model Adaptor : " VerticalAlignment="Center" Margin="1" />
             <TextBox Name="tbDomainModelAdaptorDLL" VerticalAlignment="Center" HorizontalAlignment="Stretch" Grid.Column="1"/>
             <Button Name="buttonLoadDomainModelAdaptorDLL" Content="Load" Margin="1" Grid.Column="2" Click="buttonLoadDomainModelAdaptorDLL_Click"/>
+            <ComboBox Name="cbPublishMode" Margin="1" Grid.Column="3" VerticalAlignment="Center">
+                <ComboBoxItem IsSelected="True">Release</ComboBoxItem>
+                <ComboBoxItem>Debug</ComboBoxItem>
+            </ComboBox>
         </Grid>
         <TextBlock Grid.Row="1" Name="tbDomainName" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16"/>
         <Grid Grid.Row="2">

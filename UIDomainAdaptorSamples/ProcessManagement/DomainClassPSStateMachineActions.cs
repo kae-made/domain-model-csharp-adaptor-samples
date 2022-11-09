@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kae.StateMachine;
 using Kae.DomainModel.Csharp.Framework;
+using Kae.DomainModel.Csharp.Framework.Adaptor.ExternalStorage;
 
 namespace ProcessManagement
 {
@@ -61,7 +62,14 @@ namespace ProcessManagement
             if (iWork != null)
             {
                 // Line : 5
-                DomainClassIWStateMachine.IW1_Start.Create(receiver:iWork, sendNow:true);
+                if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                {
+                    changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = iWork, Event = DomainClassIWStateMachine.IW1_Start.Create(receiver:iWork, false, sendNow:false) });
+                }
+                else
+                {
+                    DomainClassIWStateMachine.IW1_Start.Create(receiver:iWork, isSelfEvent:false, sendNow:true);
+                }
 
             }
 
@@ -107,7 +115,14 @@ namespace ProcessManagement
             else
             {
                 // Line : 7
-                DomainClassPStateMachine.P3_DoneAllSteps.Create(receiver:process, sendNow:true);
+                if (instanceRepository.ExternalStorageAdaptor != null && instanceRepository.ExternalStorageAdaptor.DoseEventComeFromExternal())
+                {
+                    changedStates.Add(new CEventChangedState() { OP = ChangedState.Operation.Create, Target = process, Event = DomainClassPStateMachine.P3_DoneAllSteps.Create(receiver:process, false, sendNow:false) });
+                }
+                else
+                {
+                    DomainClassPStateMachine.P3_DoneAllSteps.Create(receiver:process, isSelfEvent:false, sendNow:true);
+                }
 
             }
 
