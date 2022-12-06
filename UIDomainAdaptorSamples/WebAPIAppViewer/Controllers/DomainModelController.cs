@@ -145,23 +145,31 @@ namespace Kae.DomainModel.CSharp.Utility.Application.WebAPIAppDomainModelViewer.
         public static string HubUrl { get; set; }
 
         public static ConfigurationManager AppConfig { get; set; }
-        protected static HubConnection? GetHubConnection()
+
+        private static HubConnection hubConnection = null;
+        protected static async Task<HubConnection?> GetHubConnection()
         {
-            HubConnection hubConnection = null;
-            if (!string.IsNullOrEmpty(HubUrl))
+            if (hubConnection == null)
             {
-                hubConnection = new HubConnectionBuilder().WithUrl(HubUrl).WithAutomaticReconnect().Build();
+                if (!string.IsNullOrEmpty(HubUrl))
+                {
+                    hubConnection = new HubConnectionBuilder().WithUrl(HubUrl).WithAutomaticReconnect().Build();
+                    if (hubConnection != null)
+                    {
+                        await hubConnection.StartAsync();
+                    }
+                }
             }
             return hubConnection;
         }
-        private static void relationshipUpdated(object sender, RelationshipUpdatedEventArgs e)
+        private static async void relationshipUpdated(object sender, RelationshipUpdatedEventArgs e)
         {
-            GetHubConnection()?.InvokeAsync("RelationshipUpdated", e.RelationshipId, e.Phrase, e.SourceClassKeyLetter, e.SourceIdentities, e.DestinationClassKeyLetter, e.DestinationIdentities).Wait();
+            (await GetHubConnection())?.InvokeAsync("RelationshipUpdated", e.RelationshipId, e.Phrase, e.SourceClassKeyLetter, e.SourceIdentities, e.DestinationClassKeyLetter, e.DestinationIdentities).Wait();
         }
 
-        private static void classPropretiesUpdated(object sender, ClassPropertiesUpdatedEventArgs e)
+        private static async void classPropretiesUpdated(object sender, ClassPropertiesUpdatedEventArgs e)
         {
-            GetHubConnection()?.InvokeAsync("InstanceUpdated", e.ClassKeyLetter, e.Operation, e.Identities, e.Properties);
+            (await GetHubConnection())?.InvokeAsync("InstanceUpdated", e.ClassKeyLetter, e.Operation, e.Identities, e.Properties);
         }
     }
 }
